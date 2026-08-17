@@ -40,3 +40,11 @@ add_custom_command(TARGET LeviathanEditor
                                 "$<TARGET_FILE_DIR:LeviathanEditor>/Config"
         COMMENT "Copying runtime Config directory to build folder"
 )
+
+add_custom_command(TARGET LeviathanEditor
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory 
+                                "${CMAKE_CURRENT_SOURCE_DIR}/Content"
+                                "$<TARGET_FILE_DIR:LeviathanEditor>/Content"
+        COMMENT "Copying runtime Config directory to build folder"
+)

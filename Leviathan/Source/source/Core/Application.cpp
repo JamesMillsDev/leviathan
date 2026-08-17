@@ -1,6 +1,7 @@
 #include "Core/Application.h"
 
 #include "Core/Window.h"
+#include "Graphics/Mesh.h"
 
 #include "Utility/Config.h"
 
