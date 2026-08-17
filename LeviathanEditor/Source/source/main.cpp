@@ -1,18 +1,17 @@
 #include <Core/Window.h>
 
-#include "GLFW/glfw3.h"
+#include <Utility/Config.h>
 
-using Leviathan::Color;
+using Leviathan::Config;
 using Leviathan::Window;
 
 int main()
 {
-	Window* window = new Window{ 800, 600, "Leviathan Editor", Color::GREEN };
+	Config* cfg = new Config{ "Engine" }; 
+	Window* window = new Window{ cfg };
 	if (window->Open())
 	{
-		GLFWwindow* win = glfwGetCurrentContext();
-		
-		while (!glfwWindowShouldClose(win))
+		while (window->IsOpen())
 		{
 			if (!window->NewFrame())
 			{

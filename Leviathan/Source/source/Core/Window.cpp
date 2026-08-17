@@ -3,20 +3,32 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#include <Utility/Config.h>
 #include <Utility/Console.h>
 
 namespace
 {
 	void FramebufferSizeCallback(GLFWwindow* _, const int32 width, const int32 height)
 	{
+		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
 	}
 }
 
 namespace Leviathan
 {
-	Window::Window(const int32 w, const int32 h, const char* title, const Color& clrColor) :
-		m_window{ nullptr }, m_width{ w }, m_height{ h }, m_title{ title }, m_clearColor{ clrColor } { }
+	Window::Window(Config* config) :
+		m_window{ nullptr }, m_width{ config->Get<int32>("Window.Width") },
+		m_height{ config->Get<int32>("Window.Height") }, m_title{ config->Get<string>("Window.Title") },
+		m_clearColor{ config->Get<Color>("Window.ClrColor") }
+	{
+
+	}
+
+	bool Window::IsOpen() const
+	{
+		return !glfwWindowShouldClose(m_window);
+	}
 
 	bool Window::Open()
 	{
@@ -25,7 +37,7 @@ namespace Leviathan
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		m_window = glfwCreateWindow(m_width, m_height, m_title, nullptr, nullptr);
+		m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
 		if (m_window == nullptr)
 		{
 			Console::Error("Failed to create GLFW window!");

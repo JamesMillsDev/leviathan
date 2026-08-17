@@ -6,7 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
-//#include "Maths/Color.h"
+#include "Maths/Color.h"
 
 using std::string;
 using std::stringstream;
@@ -100,5 +100,5 @@ namespace Leviathan
 		return json.is_null() ? T{} : json.get<T>();
 	}
 
-	//NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Color, r, g, b, a)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Color, r, g, b, a)
 }

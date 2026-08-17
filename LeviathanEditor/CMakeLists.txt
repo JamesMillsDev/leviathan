@@ -32,3 +32,11 @@ target_include_directories(LeviathanEditor
         PUBLIC "Source/include"
         PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+add_custom_command(TARGET LeviathanEditor
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory 
+                                "${CMAKE_CURRENT_SOURCE_DIR}/Config"
+                                "$<TARGET_FILE_DIR:LeviathanEditor>/Config"
+        COMMENT "Copying runtime Config directory to build folder"
+)
