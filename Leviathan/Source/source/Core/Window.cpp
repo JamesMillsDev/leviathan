@@ -17,12 +17,16 @@ namespace
 
 namespace Leviathan
 {
-	Window::Window(Config* config) :
-		m_window{ nullptr }, m_width{ config->Get<int32>("Window.Width") },
-		m_height{ config->Get<int32>("Window.Height") }, m_title{ config->Get<string>("Window.Title") },
-		m_clearColor{ config->Get<Color>("Window.ClrColor") }
+	Window::Window(const weak_ptr<Config>& config, PrivateKey key) :
+		m_window{ nullptr }
 	{
-
+		if (const auto cfg = config.lock())
+		{
+			m_width = cfg->Get<int32>("Window.Width");
+			m_height = cfg->Get<int32>("Window.Height");
+			m_title = cfg->Get<string>("Window.Title");
+			m_clearColor = cfg->Get<Color>("Window.ClrColor");
+		}
 	}
 
 	bool Window::IsOpen() const

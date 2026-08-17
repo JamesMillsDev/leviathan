@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
+
 #include <Maths/Color.h>
 
 struct GLFWwindow;
+
+using std::weak_ptr;
 
 namespace Leviathan
 {
@@ -10,6 +14,13 @@ namespace Leviathan
 
 	class Window
 	{
+		friend class Application;
+
+	private:
+		struct PrivateKey
+		{
+		};
+
 	private:
 		GLFWwindow* m_window;
 		int32 m_width;
@@ -18,11 +29,12 @@ namespace Leviathan
 		Color m_clearColor;
 
 	public:
-		explicit Window(Config* config);
+		explicit Window(const weak_ptr<Config>& config, PrivateKey key);
 
 	public:
 		[[nodiscard]] bool IsOpen() const;
 
+	private:
 		[[nodiscard]] bool Open();
 		void Close() const;
 

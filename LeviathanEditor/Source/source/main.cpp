@@ -1,30 +1,10 @@
-#include <Core/Window.h>
-
-#include <Utility/Config.h>
-
-using Leviathan::Config;
-using Leviathan::Window;
+#include <Core/Application.h>
 
 int main()
 {
-	Config* cfg = new Config{ "Engine" }; 
-	Window* window = new Window{ cfg };
-	if (window->Open())
-	{
-		while (window->IsOpen())
-		{
-			if (!window->NewFrame())
-			{
-				continue;
-			}
+#if _DEBUG
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
-			window->Present();
-		}
-
-		window->Close();
-	}
-
-	delete window;
-
-	return 0;
+	return Leviathan::Application{}.Run();
 }
