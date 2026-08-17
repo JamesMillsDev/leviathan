@@ -11,8 +11,8 @@ endif()
 option(EDITOR_MODE "Run the editor." OFF)
 add_compile_definitions($<$<CONFIG:Debug>:_DEBUG>)
 
-add_subdirectory(Leviathan)
 add_subdirectory(ThirdParty)
+add_subdirectory(Leviathan)
 
 if(EDITOR_MODE)
     add_subdirectory(LeviathanEditor)

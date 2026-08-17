@@ -2,6 +2,8 @@
 
 namespace Leviathan
 {
+    class Window;
+
     class Application
     {
     public:
