@@ -9,7 +9,7 @@ namespace Leviathan
 {
 	Application::Application()
 		: m_engineConfig{ std::make_shared<Config>("Engine") },
-		  m_window{ new Window{ m_engineConfig, Window::PrivateKey{} } }
+		  m_window{ std::make_shared<Window>(m_engineConfig, Window::PrivateKey{}) }
 	{
 
 	}
