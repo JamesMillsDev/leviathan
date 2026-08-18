@@ -1,7 +1,10 @@
 #include "Core/Application.h"
 
 #include "Core/Window.h"
+
+#include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Shader.h"
 
 #include "Utility/Config.h"
 
@@ -29,6 +32,11 @@ namespace Leviathan
 		// Attempt to open the window
 		if (m_window->Open())
 		{
+			Shader* shader = new Shader{ "Shaders/unlit" };
+			Material* material = new Material{ shader };
+
+			Mesh* mesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
+
 			// The window opened successfully, so run the render loop
 			while (m_window->IsOpen())
 			{
@@ -38,9 +46,18 @@ namespace Leviathan
 					continue;
 				}
 
+				if (material->Bind())
+				{
+					mesh->Render();
+				}
+
 				// Present the current window
 				m_window->Present();
 			}
+
+			delete mesh;
+			delete material;
+			delete shader;
 
 			// Close the window safely
 			m_window->Close();

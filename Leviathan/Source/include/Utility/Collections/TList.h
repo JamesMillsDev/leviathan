@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <initializer_list>
 #include <iterator>
 #include <ranges>
@@ -142,33 +143,33 @@ namespace Leviathan
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator::reference TList<T, GROWTH>::Iterator::operator*() const
+	typename TList<T, GROWTH>::Iterator::reference TList<T, GROWTH>::Iterator::operator*() const
 	{
 		return *m_ptr;
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator::pointer TList<T, GROWTH>::Iterator::operator->()
+	typename TList<T, GROWTH>::Iterator::pointer TList<T, GROWTH>::Iterator::operator->()
 	{
 		return m_ptr;
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator& TList<T, GROWTH>::Iterator::operator++()
+	typename TList<T, GROWTH>::Iterator& TList<T, GROWTH>::Iterator::operator++()
 	{
 		++m_ptr;
 		return *this;
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator& TList<T, GROWTH>::Iterator::operator--()
+	typename TList<T, GROWTH>::Iterator& TList<T, GROWTH>::Iterator::operator--()
 	{
 		--m_ptr;
 		return *this;
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::Iterator::operator++(int)
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::Iterator::operator++(int)
 	{
 		Iterator tmp = *this;
 		++(*this);
@@ -176,7 +177,7 @@ namespace Leviathan
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::Iterator::operator--(int)
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::Iterator::operator--(int)
 	{
 		Iterator tmp = *this;
 		--(*this);
@@ -196,13 +197,13 @@ namespace Leviathan
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::View::begin() const
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::View::begin() const
 	{
 		return std::ranges::begin(value);
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::View::end() const
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::View::end() const
 	{
 		return std::ranges::end(value);
 	}
@@ -404,13 +405,13 @@ namespace Leviathan
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::begin()
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::begin()
 	{
 		return Iterator{ &m_data[0] };
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::end()
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::end()
 	{
 		return Iterator{ &m_data[m_count] };
 	}
@@ -428,13 +429,13 @@ namespace Leviathan
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::begin() const
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::begin() const
 	{
 		return Iterator{ &m_data[0] };
 	}
 
 	template <typename T, int64 GROWTH>
-	TList<T, GROWTH>::template Iterator TList<T, GROWTH>::end() const
+	typename TList<T, GROWTH>::Iterator TList<T, GROWTH>::end() const
 	{
 		return Iterator{ &m_data[m_count] };
 	}

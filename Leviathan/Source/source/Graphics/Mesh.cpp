@@ -73,7 +73,7 @@ namespace Leviathan
 
 		for (uint8 i = 0; i < MAX_UV_CHANNELS; ++i)
 		{
-			glVertexAttribPointer(locationIndex, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, uvs[i])));
+			glVertexAttribPointer(locationIndex, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>(offsetof(Vertex, uvs) + i * sizeof(vec2)));
 			glEnableVertexAttribArray(locationIndex++);
 		}
 
@@ -106,10 +106,10 @@ namespace Leviathan
 		// Attempt to import the asset
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(
-			path.c_str(), aiProcess_Triangulate | aiProcess_GlobalScale | aiProcess_CalcTangentSpace
+			("Content/" + path).c_str(), aiProcess_Triangulate | aiProcess_GlobalScale | aiProcess_CalcTangentSpace
 		);
 
-		TList<SubMesh> subMeshes;
+		TList<SubMesh*> subMeshes;
 
 		// Iterate over each mesh 
 		for (uint32 meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
@@ -191,7 +191,7 @@ namespace Leviathan
 			}
 
 			// Add the built submesh
-			subMeshes.Add(SubMesh{ vertices, indices });
+			subMeshes.Add(new SubMesh{ vertices, indices });
 		}
 
 		// Set the submesh data and return the mesh;
@@ -204,25 +204,26 @@ namespace Leviathan
 
 	Mesh::~Mesh()
 	{
-		for (SubMesh& subMesh : m_submeshes)
+		for (SubMesh*& subMesh : m_submeshes)
 		{
-			subMesh.CleanOglObjects();
+			subMesh->CleanOglObjects();
+			delete subMesh;
 		}
 	}
 
 	void Mesh::Render()
 	{
-		for (const SubMesh& subMesh : m_submeshes)
+		for (const SubMesh* subMesh : m_submeshes)
 		{
-			glBindVertexArray(subMesh.m_vao);
-			if (subMesh.m_hasIndices)
+			glBindVertexArray(subMesh->m_vao);
+			if (subMesh->m_hasIndices)
 			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, subMesh.m_ibo);
-				glDrawElements(GL_TRIANGLES, static_cast<int32>(subMesh.m_triangleCount), GL_UNSIGNED_INT, nullptr);
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, subMesh->m_ibo);
+				glDrawElements(GL_TRIANGLES, static_cast<int32>(subMesh->m_triangleCount), GL_UNSIGNED_INT, nullptr);
 			}
 			else
 			{
-				glDrawArrays(GL_TRIANGLES, 0, static_cast<int32>(subMesh.m_vertexCount));
+				glDrawArrays(GL_TRIANGLES, 0, static_cast<int32>(subMesh->m_vertexCount));
 			}
 		}
 	}

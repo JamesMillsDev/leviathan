@@ -1,3 +1,7 @@
+#if _DEBUG
+#include <crtdbg.h>
+#endif
+
 #include <Core/Application.h>
 
 int main()

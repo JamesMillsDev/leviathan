@@ -6,7 +6,6 @@
 #include <ranges>
 #include <stdexcept>
 
-#include "Object.h"
 #include "Maths/Alias.h"
 
 using std::hash;
@@ -143,7 +142,7 @@ namespace Leviathan
 		[[nodiscard]] bool empty() const;
 
 	private:
-		uint64 IndexFor(KEY key, uint64 overrideSize = UINT64_MAX) const;
+		uint64 IndexFor(KEY key, uint64 overrideSize = 0xffffffffffffffffULL) const;
 		uint64 Hash(KEY key) const;
 
 		void Swap(TMap& other) noexcept;
@@ -239,19 +238,19 @@ namespace Leviathan
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator::value_type TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator*() const
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::value_type TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator*() const
 	{
 		return m_current;
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator::value_type TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator->() const
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::value_type TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator->() const
 	{
 		return m_current;
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator& TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator++()
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator& TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator++()
 	{
 		m_current = m_current->next;
 		SkipEmptyBuckets();
@@ -259,7 +258,7 @@ namespace Leviathan
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator++(int)
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator::operator++(int)
 	{
 		Iterator tmp = *this;
 		++(*this);
@@ -279,13 +278,13 @@ namespace Leviathan
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::View::begin() const
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::View::begin() const
 	{
 		return std::ranges::begin(value);
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::View::end() const
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::View::end() const
 	{
 		return std::ranges::end(value);
 	}
@@ -575,13 +574,13 @@ namespace Leviathan
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::begin()
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::begin()
 	{
 		return Iterator{ m_buckets, m_capacity, 0, m_capacity > 0 ? m_buckets[0] : nullptr };
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::end()
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::end()
 	{
 		return Iterator{ m_buckets, m_capacity, m_capacity, nullptr };
 	}
@@ -599,13 +598,13 @@ namespace Leviathan
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::begin() const
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::begin() const
 	{
 		return Iterator{ m_buckets, m_capacity, 0, m_capacity > 0 ? m_buckets[0] : nullptr };
 	}
 
 	template <typename KEY, typename VALUE, int64 GROWTH, float LOAD_THRESHOLD>
-	TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::template Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::end() const
+	typename TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::Iterator TMap<KEY, VALUE, GROWTH, LOAD_THRESHOLD>::end() const
 	{
 		return Iterator{ m_buckets, m_capacity, m_capacity, nullptr };
 	}
