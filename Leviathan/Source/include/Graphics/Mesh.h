@@ -28,6 +28,8 @@ namespace Leviathan
 
 	class Mesh
 	{
+		friend class Renderer;
+
 	public:
 		class SubMesh
 		{
@@ -64,7 +66,7 @@ namespace Leviathan
 		Mesh();
 		~Mesh();
 
-	public:
+	private:
 		void Render();
 
 	};

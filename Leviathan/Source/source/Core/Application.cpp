@@ -5,6 +5,7 @@
 
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Renderer.h"
 #include "Graphics/Shader.h"
 
 #include "Utility/Config.h"
@@ -13,7 +14,8 @@ namespace Leviathan
 {
 	Application::Application()
 		: m_engineConfig{ std::make_shared<Config>("Engine") },
-		  m_window{ std::make_shared<Window>(m_engineConfig, Window::PrivateKey{}) }
+		m_window{ std::make_shared<Window>(m_engineConfig, Window::PrivateKey{}) },
+		m_renderer{ std::make_shared<Renderer>(Renderer::PrivateKey{}) }
 	{
 
 	}
@@ -33,15 +35,14 @@ namespace Leviathan
 		// Attempt to open the window
 		if (m_window->Open())
 		{
-			Shader* shader = new Shader{ "Shaders/unlit" };
+			Shader* shader = new Shader{ "Shaders/lit" };
 			Material* material = new Material{ shader };
-
-			int32 mvpMatrixLoc = material->FindUniform("mvp");
 
 			Mesh* mesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
 			Camera* camera = new Camera;
 
 			mat4 model = mat4(1.f);
+			m_renderer->m_camera = camera;
 
 			// The window opened successfully, so run the render loop
 			while (m_window->IsOpen())
@@ -52,11 +53,7 @@ namespace Leviathan
 					continue;
 				}
 
-				if (material->Bind())
-				{
-					material->Set(mvpMatrixLoc, camera->Projection() * model);
-					mesh->Render();
-				}
+				m_renderer->Render(material, mesh, model);
 
 				// Present the current window
 				m_window->Present();

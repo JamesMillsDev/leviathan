@@ -31,6 +31,8 @@ namespace Leviathan
 
 	private:
 		Shader* m_shader;
+		int32 m_vpLoc;
+		int32 m_modelLoc;
 
 	public:
 		explicit Material(Shader* shader);

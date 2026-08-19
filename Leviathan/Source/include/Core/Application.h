@@ -9,6 +9,7 @@ using std::weak_ptr;
 
 namespace Leviathan
 {
+	class Renderer;
 	class Config;
 	class GameInstance;
 	class Window;
@@ -19,6 +20,7 @@ namespace Leviathan
         shared_ptr<Config> m_engineConfig;
         shared_ptr<Window> m_window;
         shared_ptr<GameInstance> m_game;
+        shared_ptr<Renderer> m_renderer;
 
     public:
         Application();
