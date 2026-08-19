@@ -12,7 +12,7 @@ using glm::vec3;
 namespace Leviathan
 {
 	Camera::Camera(const float fov, const float near, const float far) :
-		m_fovY{ fov }, m_nearPlane{ near }, m_farPlane{ far }, m_theta{ 0.f }, m_phi{ 0.f }, m_location{ 0.f, 1.f, -10.f }
+		m_fovY{ fov }, m_nearPlane{ near }, m_farPlane{ far }, m_theta{ 180.f }, m_phi{ 0.f }, m_location{ 0.f, 1.f, 3.f }
 	{}
 
 	mat4 Camera::Projection() const

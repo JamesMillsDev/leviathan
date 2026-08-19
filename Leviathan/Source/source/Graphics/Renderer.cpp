@@ -26,6 +26,9 @@ namespace Leviathan
 
 		material->Set(material->m_vpLoc, m_camera->Projection());
 		material->Set(material->m_modelLoc, transform);
+		material->SetMaterialProperties();
+		material->Set("lights[0].color", vec3{ 1.f });
+		material->Set("lights[0].location", vec3{ 1.2f, 1.0f, 2.0f });
 
 		mesh->Render();
 	}

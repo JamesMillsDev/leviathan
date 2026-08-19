@@ -10,14 +10,26 @@ namespace Leviathan
 	{};
 
 	Material::Material(Shader* shader)
-		: m_shader{ shader }, m_vpLoc{ FindUniform("vp") }, m_modelLoc{ FindUniform("model") }
+		: m_shader{ shader }, m_vpLoc{ FindUniform("pv") }, m_modelLoc{ FindUniform("model") }
 	{
 
 	}
 
-	bool Material::Bind() const
+	void Material::SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value)
 	{
-		return m_shader->Bind();
+		if (m_properties.ContainsKey(id))
+		{
+			return;
+		}
+
+		MaterialProperty property =
+		{
+			.loc = FindUniform(id),
+			.type = type,
+			.value = value
+		};
+
+		m_properties.Add(id, property);
 	}
 
 	void Material::Set(const string& name, const int32 value)
@@ -253,6 +265,56 @@ namespace Leviathan
 		}
 
 		glUniformMatrix4fv(id, count, GL_FALSE, glm::value_ptr(value[0]));
+	}
+
+	void Material::SetMaterialProperties()
+	{
+		for (TMapEntry<string, MaterialProperty>* property : m_properties)
+		{
+			switch (auto& [loc, type, value] = property->Value(); type)
+			{
+				case EMaterialPropertyType::Int:
+					{
+						Set(loc, value.iValue);
+						break;
+					}
+				case EMaterialPropertyType::Float:
+					{
+						Set(loc, value.fValue);
+						break;
+					}
+				case EMaterialPropertyType::Vec2:
+					{
+						Set(loc, value.v2Value);
+						break;
+					}
+				case EMaterialPropertyType::Vec3:
+					{
+						Set(loc, value.v3Value);
+						break;
+					}
+				case EMaterialPropertyType::Vec4:
+					{
+						Set(loc, value.v4Value);
+						break;
+					}
+				case EMaterialPropertyType::Mat3:
+					{
+						Set(loc, value.m3Value);
+						break;
+					}
+				case EMaterialPropertyType::Mat4:
+					{
+						Set(loc, value.m4Value);
+						break;
+					}
+			}
+		}
+	}
+
+	bool Material::Bind() const
+	{
+		return m_shader->Bind();
 	}
 
 	int32 Material::FindUniform(const string& name) const

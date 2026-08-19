@@ -1,6 +1,7 @@
 #include "Core/Application.h"
 
 #include "Core/Window.h"
+#include "glm/ext/matrix_transform.hpp"
 #include "Graphics/Camera.h"
 
 #include "Graphics/Material.h"
@@ -37,11 +38,20 @@ namespace Leviathan
 		{
 			Shader* shader = new Shader{ "Shaders/lit" };
 			Material* material = new Material{ shader };
-
+			material->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f, .5f, .31f } });
 			Mesh* mesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
-			Camera* camera = new Camera;
 
-			mat4 model = mat4(1.f);
+			Shader* cubeShader = new Shader{ "Shaders/unlit" };
+			Material* cubeMaterial = new Material{ cubeShader };
+			cubeMaterial->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } });
+			Mesh* cubeMesh = Mesh::MakeCube();
+
+			Camera* camera = new Camera; 
+
+			mat4 model = glm::scale(mat4(1.f), vec3{ .5f });
+			mat4 cubeModel = glm::translate(mat4(1.f), vec3{ 1.2f, 1.f, 2.f });
+			cubeModel = glm::scale(cubeModel, vec3{ .2f });
+
 			m_renderer->m_camera = camera;
 
 			// The window opened successfully, so run the render loop
@@ -54,6 +64,7 @@ namespace Leviathan
 				}
 
 				m_renderer->Render(material, mesh, model);
+				m_renderer->Render(cubeMaterial, cubeMesh, cubeModel);
 
 				// Present the current window
 				m_window->Present();

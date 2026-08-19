@@ -5,8 +5,14 @@
 #include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-
 #include <glad/gl.h>
+#include <glm/mat4x4.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
+#include "Utility/Collections/TArray.h"
+
+using glm::mat4;
 
 namespace Leviathan
 {
@@ -198,6 +204,87 @@ namespace Leviathan
 		Mesh* newMesh = new Mesh;
 		newMesh->m_submeshes = subMeshes;
 		return newMesh;
+	}
+
+	Mesh* Mesh::MakeCube()
+	{
+		TList<Vertex> vertices;
+		TList<uint32> indices;
+
+		TArray directions =
+		{
+			vec4{ 0.f, 1.f, 0.f, 0.f },
+			vec4{ 0.f, -1.f, 0.f, 0.f },
+			vec4{ 1.f, 0.f, 0.f, 0.f },
+			vec4{ -1.f, 0.f, 0.f, 0.f },
+			vec4{ 0.f, 0.f, 1.f, 0.f },
+			vec4{ 0.f, 0.f, -1.f, 0.f },
+		};
+
+		TArray points =
+		{
+			vec4{ .5f, .5f, -.5f, 1.f },
+			vec4{ .5f, .5f, .5f, 1.f },
+			vec4{ -.5f, .5f, .5f, 1.f },
+			vec4{ -.5f, .5f, -.5f, 1.f },
+		};
+
+		TArray uvs =
+		{
+			vec2{ 0.f, 0.f },
+			vec2{ 0.f, 1.f },
+			vec2{ 1.f, 1.f },
+			vec2{ 1.f, 0.f },
+		};
+
+		const vec2 deltaUV1 = uvs[1] - uvs[0];
+		const vec2 deltaUV2 = uvs[2] - uvs[0];
+		const float f = 1.f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+		for (uint64 i = 0; i < directions.Count(); ++i)
+		{
+			const mat4 orientation = glm::mat4_cast(glm::rotation(vec3{ 0.f, 1.f, 0.f }, vec3{ directions[i] }));
+
+			const vec4 edge1 = orientation * points[1] - orientation * points[0];
+			const vec4 edge2 = orientation * points[2] - orientation * points[0];
+
+			for (uint64 j = 0; j < points.Count(); ++j)
+			{
+				Vertex vert =
+				{
+					.location = orientation * points[j],
+					.normal = directions[i],
+					.tangent = {},
+					.uvs = {uvs[j]},
+					.color = Color::WHITE
+				};
+
+				vert.tangent =
+				{
+					f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+					f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+					f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z),
+					0.f
+				};
+
+				vertices.Add(vert);
+			}
+		}
+
+		indices.AddRange({ 0,  3,  1,  1,  3,  2 });
+		indices.AddRange({ 4,  7,  5,  5,  7,  6 });
+		indices.AddRange({ 8, 11,  9,  9, 11, 10 });
+		indices.AddRange({ 12, 15, 13, 13, 15, 14 });
+		indices.AddRange({ 16, 19, 17, 17, 19, 18 });
+		indices.AddRange({ 20, 23, 21, 21, 23, 22 });
+
+		TList<SubMesh*> subMeshes;
+		subMeshes.Add(new SubMesh{ vertices, indices });
+
+		Mesh* mesh = new Mesh;
+		mesh->m_submeshes = subMeshes;
+
+		return mesh;
 	}
 
 	Mesh::Mesh() = default;

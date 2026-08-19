@@ -20,7 +20,7 @@ namespace Leviathan
 		vec3 m_location;
 
 	public:
-		explicit Camera(float fov = 90.f, float near = .1f, float far = 100.f);
+		explicit Camera(float fov = 90.f, float near = .1f, float far = 1000.f);
 
 	public:
 		mat4 Projection() const;
