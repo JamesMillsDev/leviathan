@@ -10,8 +10,11 @@ namespace
 {
 	void FramebufferSizeCallback(GLFWwindow* _, const int32 width, const int32 height)
 	{
-		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
+
+	#if IS_EDITOR
+		glScissor(0, 0, width, height);
+	#endif
 	}
 }
 
@@ -58,7 +61,11 @@ namespace Leviathan
 		}
 
 		glViewport(0, 0, m_width, m_height);
+		
+	#if IS_EDITOR
 		glEnable(GL_SCISSOR_TEST);
+	#endif
+
 		glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback);
 		return true;
 	}

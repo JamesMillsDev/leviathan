@@ -17,7 +17,7 @@ namespace
 {
 	constexpr uint16 INFO_LOG_LENGTH = 512;
 
-	unordered_map<int32, string> fileExtensions =
+	unordered_map<EShaderStage, string> fileExtensions =
 	{
 		{ EShaderStage::Vertex, "vert" },
 		{ EShaderStage::Fragment, "frag" },
@@ -29,14 +29,14 @@ namespace
 
 namespace Leviathan
 {
-	Shader::SubShader::SubShader(const int32 type, const string& name)
+	Shader::SubShader::SubShader(const EShaderStage type, const string& name)
 		: handle{ 0 }, compiled{ true }
 	{
 		if (ifstream file{ std::format("Content/{}.{}", name, fileExtensions[type]) }; file.is_open())
 		{
 			// Read all shader source code and generate the shader handle
 			source = string{ istreambuf_iterator(file), istreambuf_iterator<char>() };
-			handle = glCreateShader(type);
+			handle = glCreateShader(static_cast<int32>(type));
 
 			// Attempt to compile the shader
 			const char* src = source.c_str();
@@ -52,7 +52,7 @@ namespace Leviathan
 			{
 				// Get the error message
 				glGetShaderInfoLog(handle, INFO_LOG_LENGTH, nullptr, infoLog);
-				Console::Error(std::format("SHADER STAGE {} FAILED TO COMPILE!", type));
+				Console::Error(std::format("SHADER STAGE {} FAILED TO COMPILE!", static_cast<int32>(type)));
 				compiled = false;
 			}
 
@@ -69,7 +69,7 @@ namespace Leviathan
 		bool hasAnyLoaded = false;
 
 		TList<SubShader*> shaders;
-		for (const int32 stage : { Vertex, Fragment, Geometry, TesselationControl, TesselationEvaluation })
+		for (const EShaderStage stage : { EShaderStage::Vertex, EShaderStage::Fragment, EShaderStage::Geometry, EShaderStage::TesselationControl, EShaderStage::TesselationEvaluation })
 		{
 			// Attempt to generate the sub shader
 			SubShader* subShader = new SubShader{ stage, name };

@@ -2,7 +2,9 @@
 
 layout(location = 0) in vec4 vertLocation;
 
+uniform mat4 mvp;
+
 void main()
 {
-	gl_Position = vertLocation;
+	gl_Position = mvp * vertLocation;
 }

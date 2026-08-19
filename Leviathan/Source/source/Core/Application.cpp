@@ -1,6 +1,7 @@
 #include "Core/Application.h"
 
 #include "Core/Window.h"
+#include "Graphics/Camera.h"
 
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
@@ -35,7 +36,12 @@ namespace Leviathan
 			Shader* shader = new Shader{ "Shaders/unlit" };
 			Material* material = new Material{ shader };
 
+			int32 mvpMatrixLoc = material->FindUniform("mvp");
+
 			Mesh* mesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
+			Camera* camera = new Camera;
+
+			mat4 model = mat4(1.f);
 
 			// The window opened successfully, so run the render loop
 			while (m_window->IsOpen())
@@ -48,6 +54,7 @@ namespace Leviathan
 
 				if (material->Bind())
 				{
+					material->Set(mvpMatrixLoc, camera->Projection() * model);
 					mesh->Render();
 				}
 
@@ -55,6 +62,7 @@ namespace Leviathan
 				m_window->Present();
 			}
 
+			delete camera;
 			delete mesh;
 			delete material;
 			delete shader;

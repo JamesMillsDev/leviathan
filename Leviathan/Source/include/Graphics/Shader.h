@@ -3,11 +3,10 @@
 #include <glad/gl.h>
 
 #include "Maths/Color.h"
-#include "Utility/Collections/TMap.h"
 
 namespace Leviathan
 {
-	enum EShaderStage : uint16
+	enum class EShaderStage : uint16
 	{
 		Vertex = GL_VERTEX_SHADER,
 		Fragment = GL_FRAGMENT_SHADER,
@@ -29,7 +28,7 @@ namespace Leviathan
 			bool compiled;
 
 		public:
-			explicit SubShader(int32 type, const string& name);
+			explicit SubShader(EShaderStage type, const string& name);
 
 		};
 
