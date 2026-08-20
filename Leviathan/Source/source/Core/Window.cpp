@@ -62,6 +62,7 @@ namespace Leviathan
 
 		glViewport(0, 0, m_width, m_height);
 		glEnable(GL_DEPTH_TEST);
+		glCullFace(GL_BACK);
 		
 	#if IS_EDITOR
 		glEnable(GL_SCISSOR_TEST);

@@ -287,6 +287,78 @@ namespace Leviathan
 		return mesh;
 	}
 
+	Mesh* Mesh::MakePlane()
+	{
+		TArray points =
+		{
+			vec4{ -1.f, 0.f, 1.f, 1.f },
+			vec4{ -1.f, 0.f, -1.f, 1.f },
+			vec4{ 1.f, 0.f, -1.f, 1.f },
+			vec4{ 1.f, 0.f, 1.f, 1.f },
+		};
+
+		TArray uvs =
+		{
+			vec2{ 0.f, 1.f },
+			vec2{ 0.f, 0.f },
+			vec2{ 1.f, 0.f },
+			vec2{ 1.f, 1.f },
+		};
+
+		TArray<vec4, 2> tangents;
+
+		constexpr vec4 norm = { 0.f, 1.f, 0.f, 0.f };
+		vec4 edge1 = points[1] - points[0];
+		vec4 edge2 = points[2] - points[0];
+
+		vec2 deltaUv1 = uvs[1] - uvs[0];
+		vec2 deltaUv2 = uvs[2] - uvs[0];
+
+		float f = 1.f / (deltaUv1.x * deltaUv2.y - deltaUv2.x * deltaUv1.y);
+
+		tangents[0] = vec4
+		{
+			f * (deltaUv2.y * edge1.x - deltaUv1.y * edge2.x),
+			f * (deltaUv2.y * edge1.y - deltaUv1.y * edge2.y),
+			f * (deltaUv2.y * edge1.z - deltaUv1.y * edge2.z),
+			1.f
+		};
+
+		edge1 = points[2] - points[0];
+		edge2 = points[3] - points[0];
+
+		deltaUv1 = uvs[2] - uvs[0];
+		deltaUv2 = uvs[3] - uvs[0];
+
+		f = 1.f / (deltaUv1.x * deltaUv2.y - deltaUv2.x * deltaUv1.y);
+
+		tangents[1] = vec4
+		{
+			f * (deltaUv2.y * edge1.x - deltaUv1.y * edge2.x),
+			f * (deltaUv2.y * edge1.y - deltaUv1.y * edge2.y),
+			f * (deltaUv2.y * edge1.z - deltaUv1.y * edge2.z),
+			1.f
+		};
+
+		TList vertices =
+		{
+			Vertex{.location = points[0], .normal = norm, .tangent = tangents[0], .uvs = { uvs[0] }, .color = Color::WHITE },
+			Vertex{.location = points[1], .normal = norm, .tangent = tangents[0], .uvs = { uvs[1] }, .color = Color::WHITE },
+			Vertex{.location = points[2], .normal = norm, .tangent = tangents[0], .uvs = { uvs[2] }, .color = Color::WHITE },
+			Vertex{.location = points[0], .normal = norm, .tangent = tangents[1], .uvs = { uvs[0] }, .color = Color::WHITE },
+			Vertex{.location = points[2], .normal = norm, .tangent = tangents[1], .uvs = { uvs[2] }, .color = Color::WHITE },
+			Vertex{.location = points[3], .normal = norm, .tangent = tangents[1], .uvs = { uvs[3] }, .color = Color::WHITE },
+		};
+
+		TList<SubMesh*> subMeshes;
+		subMeshes.Add(new SubMesh{ vertices, {} });
+
+		Mesh* mesh = new Mesh;
+		mesh->m_submeshes = subMeshes;
+
+		return mesh;
+	}
+
 	Mesh::Mesh() = default;
 
 	Mesh::~Mesh()

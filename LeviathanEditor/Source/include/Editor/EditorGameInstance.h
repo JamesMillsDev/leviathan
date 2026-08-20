@@ -9,6 +9,7 @@ using glm::mat4;
 
 namespace Leviathan
 {
+	class FrameBuffer;
 	class ResourceStack;
 	class Mesh;
     class Material;
@@ -30,11 +31,20 @@ namespace Leviathan
         Material* m_shaderBallMaterial;
         mat4 m_shaderBallTransform;
 
+        Mesh* m_floorMesh;
+        Material* m_floorMaterial;
+        mat4 m_floorTransform;
+
         OrbitCamera* m_orbitCamera;
 
-        Texture* m_baseColorTexture;
-        Texture* m_normalTexture;
-        Texture* m_ormTexture;
+        Texture* m_rebarBaseColor;
+        Texture* m_rebarNormal;
+        Texture* m_rebarOrm;
+
+        Texture* m_woodFloorBaseColor;
+        Texture* m_woodFloorNormal;
+
+        FrameBuffer* m_depthBuffer;
 
         ResourceStack* m_resourceStack;
 

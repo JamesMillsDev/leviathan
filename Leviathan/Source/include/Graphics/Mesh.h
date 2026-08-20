@@ -59,6 +59,7 @@ namespace Leviathan
 	public:
 		static Mesh* MakeFromAssimp(const string& path);
 		static Mesh* MakeCube();
+		static Mesh* MakePlane();
 
 	private:
 		TList<SubMesh*> m_submeshes;

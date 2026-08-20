@@ -1,10 +1,12 @@
 #include "Editor/EditorGameInstance.h"
 
+#include <glad/gl.h>
+#include <GLFW/glfw3.h>
 #include <glm/vec3.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 #include "Core/Input.h"
-#include "GLFW/glfw3.h"
+#include "Graphics/FrameBuffer.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
@@ -18,13 +20,17 @@ namespace Leviathan
 {
 	EditorGameInstance::EditorGameInstance() :
 		m_litShader{ nullptr }, m_unlitShader{ nullptr }, m_lightMesh{ nullptr },
-		m_lightMaterial{ nullptr }, m_shaderBallMesh{ nullptr }, m_shaderBallMaterial{ nullptr },
-		m_orbitCamera{ new OrbitCamera }, m_baseColorTexture{ nullptr }, m_resourceStack{ new ResourceStack }
+		m_lightMaterial{ nullptr }, m_shaderBallMesh{ nullptr }, m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr },
+		m_floorMaterial{ nullptr }, m_orbitCamera{ new OrbitCamera }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
+		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr }, m_depthBuffer{ nullptr },
+		m_resourceStack{ new ResourceStack }
 	{
 		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
 
 		m_lightTransform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
 		m_lightTransform = glm::scale(m_lightTransform, vec3{ .2f });
+
+		m_floorTransform = glm::scale(mat4{ 1.f }, vec3{ 4.f });
 	}
 
 	void EditorGameInstance::Init()
@@ -46,35 +52,54 @@ namespace Leviathan
 		InitAndPush(
 			[this]
 			{
-				m_baseColorTexture = new Texture{ "Content/Textures/T_RebarConcrete_BC.tga" };
-				m_normalTexture = new Texture{ "Content/Textures/T_RebarConcrete_N.tga" };
-				m_ormTexture = new Texture{ "Content/Textures/T_RebarConcrete_ORM.tga" };
+				m_rebarBaseColor = new Texture{ "Content/Textures/T_RebarConcrete_BC.tga" };
+				m_rebarNormal = new Texture{ "Content/Textures/T_RebarConcrete_N.tga" };
+				m_rebarOrm = new Texture{ "Content/Textures/T_RebarConcrete_ORM.tga" };
+
+				m_woodFloorBaseColor = new Texture{ "Content/Textures/T_WoodFloor_BC.png" };
+				m_woodFloorNormal = new Texture{ "Content/Textures/T_WoodFloor_N.png" };
+
+				m_depthBuffer = new FrameBuffer{ 1024, 1024, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT, GL_NEAREST, GL_REPEAT };
+				m_depthBuffer->Bind();
+
+				glDrawBuffer(GL_NONE);
+				glReadBuffer(GL_NONE);
+
+				m_depthBuffer->Unbind();
 			},
 			[this]
 			{
-				delete m_ormTexture;
-				delete m_normalTexture;
-				delete m_baseColorTexture;
+				delete m_depthBuffer;
+
+				delete m_woodFloorNormal;
+				delete m_woodFloorBaseColor;
+
+				delete m_rebarOrm;
+				delete m_rebarNormal;
+				delete m_rebarBaseColor;
 			}
 		);
 		// Light cube
 		InitAndPush(
 			[this]
 			{
+				m_lightMesh = Mesh::MakeCube();
+
 				m_lightMaterial = new Material{ m_unlitShader };
 				m_lightMaterial->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } });
-				m_lightMesh = Mesh::MakeCube();
 			},
 			[this]
 			{
-				delete m_lightMesh;
 				delete m_lightMaterial;
+				delete m_lightMesh;
 			}
 		);
 		// Shader ball
 		InitAndPush(
 			[this]
 			{
+				m_shaderBallMesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
+
 				m_shaderBallMaterial = new Material{ m_litShader };
 
 				m_shaderBallMaterial->SetMaterialProperty(
@@ -82,19 +107,42 @@ namespace Leviathan
 				);
 
 				m_shaderBallMaterial->SetMaterialProperty(
-					"material.specularStrength", EMaterialPropertyType::Float, { .fValue = 1.f }
+					"material.specularStrength", EMaterialPropertyType::Float, { .fValue = 0.f }
 				);
 
-				m_shaderBallMaterial->SetTexture("material.baseColor", m_baseColorTexture);
-				m_shaderBallMaterial->SetTexture("material.normalMap", m_normalTexture);
-				m_shaderBallMaterial->SetTexture("material.ormMap", m_ormTexture);
-
-				m_shaderBallMesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
+				m_shaderBallMaterial->SetTexture("material.baseColor", m_rebarBaseColor);
+				m_shaderBallMaterial->SetTexture("material.normalMap", m_rebarNormal);
+				m_shaderBallMaterial->SetTexture("material.ormMap", m_rebarOrm);
 			},
 			[this]
 			{
-				delete m_shaderBallMesh;
 				delete m_shaderBallMaterial;
+				delete m_shaderBallMesh;
+			}
+		);
+		// Floor
+		InitAndPush(
+			[this]
+			{
+				m_floorMesh = Mesh::MakePlane();
+
+				m_floorMaterial = new Material{ m_litShader };
+
+				m_floorMaterial->SetMaterialProperty(
+					"material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } }
+				);
+
+				m_floorMaterial->SetMaterialProperty(
+					"material.specularStrength", EMaterialPropertyType::Float, { .fValue = .25f }
+				);
+
+				m_floorMaterial->SetTexture("material.baseColor", m_woodFloorBaseColor);
+				m_floorMaterial->SetTexture("material.normalMap", m_woodFloorNormal);
+			},
+			[this]
+			{
+				delete m_floorMaterial;
+				delete m_floorMesh;
 			}
 		);
 
@@ -127,6 +175,7 @@ namespace Leviathan
 	void EditorGameInstance::Render()
 	{
 		m_renderer->Render(m_lightMaterial, m_lightMesh, m_lightTransform);
+		m_renderer->Render(m_floorMaterial, m_floorMesh, m_floorTransform);
 		m_renderer->Render(m_shaderBallMaterial, m_shaderBallMesh, m_shaderBallTransform);
 	}
 
