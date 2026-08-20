@@ -1,20 +1,21 @@
 #include "Core/Application.h"
 
-#include <GLFW/glfw3.h>
-#include <glm/ext/matrix_transform.hpp>
-
 #include "Core/GameTime.h"
 #include "Core/Input.h"
 #include "Core/Window.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
+#include "Gameplay/GameInstance.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/Shader.h"
-#include "Graphics/Cameras/OrbitCamera.h"
 #include "Utility/Config.h"
 
 namespace Leviathan
 {
+	Application* Application::m_instance = nullptr;
+
+	Application* Application::Instance()
+	{
+		return m_instance;
+	}
+
 	Application::Application()
 		: m_engineConfig{ std::make_shared<Config>("Engine") },
 		m_window{ std::make_shared<Window>(m_engineConfig, Window::PrivateKey{}) },
@@ -33,6 +34,11 @@ namespace Leviathan
 		return m_game;
 	}
 
+	weak_ptr<Renderer> Application::GetRenderer() const
+	{
+		return m_renderer;
+	}
+
 	int32 Application::Run() const
 	{
 		// Attempt to open the window
@@ -41,26 +47,8 @@ namespace Leviathan
 			Input::Create();
 			GameTime::Init();
 
-			Shader* shader = new Shader{ "Shaders/lit" };
-			Material* material = new Material{ shader };
-			material->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f, .5f, .31f } });
-			material->SetMaterialProperty("material.specularStrength", EMaterialPropertyType::Float, { .fValue = 1.f });
-			Mesh* mesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx"); 
-
-			Shader* cubeShader = new Shader{ "Shaders/unlit" };
-			Material* cubeMaterial = new Material{ cubeShader };
-			cubeMaterial->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } });
-			Mesh* cubeMesh = Mesh::MakeCube();
-
-			OrbitCamera* camera = new OrbitCamera;
-
-			mat4 model = glm::scale(mat4(1.f), vec3{ .5f });
-			mat4 cubeModel = glm::translate(mat4(1.f), vec3{ 1.2f, 1.f, 2.f });
-			cubeModel = glm::scale(cubeModel, vec3{ .2f });
-
-			m_renderer->m_camera = camera;
-
-			Input* input = Input::GetInstance();
+			m_game->m_renderer = m_renderer;
+			m_game->Init();
 
 			// The window opened successfully, so run the render loop
 			while (m_window->IsOpen())
@@ -73,33 +61,18 @@ namespace Leviathan
 					continue;
 				}
 
-				if (input->IsMouseButtonDown(EInputCodes::MouseButtonRight))
-				{
-					vec2 mouseDelta{};
-					input->GetMouseDelta(&mouseDelta.x, &mouseDelta.y);
+				m_game->Tick();
+				m_game->Render();
 
-					camera->Rotate(mouseDelta); 
-				}
-
-				m_renderer->Render(material, mesh, model);
-				m_renderer->Render(cubeMaterial, cubeMesh, cubeModel);
-
-				// Present the current window
+				// Present the current window and clear the input status
 				m_window->Present();
-
-				input->ClearStatus();
+				Input::GetInstance()->ClearStatus();
 			}
 
-			delete cubeMaterial;
-			delete cubeShader;
-			delete cubeMesh; 
-
-			delete camera;
-			delete mesh;
-			delete material;
-			delete shader;
+			m_game->Shutdown();
 
 			// Close the window safely
+			Input::Destroy();
 			m_window->Close();
 
 			return EXIT_SUCCESS;

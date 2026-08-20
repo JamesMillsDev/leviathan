@@ -17,19 +17,50 @@ namespace Leviathan
     class Application
     {
     private:
+        static Application* m_instance;
+
+    public:
+        template<typename T>
+        static int32 Open();
+
+        static Application* Instance();
+
+    private:
         shared_ptr<Config> m_engineConfig;
         shared_ptr<Window> m_window;
         shared_ptr<GameInstance> m_game;
         shared_ptr<Renderer> m_renderer;
 
-    public:
+    private:
         Application();
 
     public:
         [[nodiscard]] weak_ptr<Window> GetWindow() const;
         [[nodiscard]] weak_ptr<GameInstance> GetGameInstance() const;
+        [[nodiscard]] weak_ptr<Renderer> GetRenderer() const;
 
+    private:
         int32 Run() const;
 
     };
+
+    template <typename T>
+    int32 Application::Open()
+    {
+        static_assert(std::is_base_of_v<GameInstance, T>, "Provided type is not a Game Instance!");
+
+        if (m_instance != nullptr)
+        {
+            return EXIT_FAILURE;
+        }
+
+        m_instance = new Application;
+        m_instance->m_game = std::make_shared<T>();
+
+        const int32 exitCode = m_instance->Run();
+        delete m_instance;
+        m_instance = nullptr;
+
+	    return exitCode;
+    }
 }

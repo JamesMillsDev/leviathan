@@ -12,6 +12,11 @@ namespace Leviathan
 
 	}
 
+	void Renderer::SetActiveCamera(Camera* camera)
+	{
+		m_camera = camera;
+	}
+
 	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform) const
 	{
 		if (m_camera == nullptr)

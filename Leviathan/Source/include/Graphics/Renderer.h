@@ -25,6 +25,7 @@ namespace Leviathan
 		explicit Renderer(PrivateKey);
 
 	public:
+		void SetActiveCamera(Camera* camera);
 		void Render(Material* material, Mesh* mesh, const mat4& transform) const;
 
 	};
