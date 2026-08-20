@@ -1,5 +1,9 @@
 #pragma once
 
+#if _DEBUG
+#include <crtdbg.h>
+#endif
+
 #include <memory>
 
 #include "Maths/Alias.h"
@@ -53,6 +57,10 @@ namespace Leviathan
         {
             return EXIT_FAILURE;
         }
+
+    #if _DEBUG
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
 
         m_instance = new Application;
         m_instance->m_game = std::make_shared<T>();
