@@ -54,6 +54,13 @@ namespace Leviathan
 		MaterialPropertyUnion value;
 	};
 
+	struct MaterialTextureProperty
+	{
+		int32 loc;
+		Texture* texture;
+		int32 slot;
+	};
+
 	class Material
 	{
 		friend class Renderer;
@@ -64,13 +71,17 @@ namespace Leviathan
 		int32 m_modelLoc;
 		int32 m_normalMatrixLoc;
 		int32 m_cameraLocationLoc;
+		int32 m_lastTextureSlot;
+
 		TMap<string, MaterialProperty> m_properties;
+		TMap<string, MaterialTextureProperty> m_textures;
 
 	public:
 		explicit Material(Shader* shader);
 
 	public:
 		void SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value);
+		void SetTexture(const string& id, Texture* texture);
 
 		void Set(const string& name, int32 value);
 		void Set(const string& name, float value);
@@ -79,7 +90,7 @@ namespace Leviathan
 		void Set(const string& name, vec4 value);
 		void Set(const string& name, const mat3& value);
 		void Set(const string& name, const mat4& value);
-		void Set(const string& name, Texture value);
+		void Set(const string& name, const Texture& value, int32 slot);
 		void Set(const string& name, const Color& value);
 		void Set(const string& name, const int32* value, int32 count);
 		void Set(const string& name, const float* value, int32 count);
@@ -96,7 +107,7 @@ namespace Leviathan
 		void Set(int32 id, vec4 value);
 		void Set(int32 id, mat3 value);
 		void Set(int32 id, mat4 value);
-		void Set(int32 id, Texture value);
+		void Set(int32 id, const Texture& value, int32 slot);
 		void Set(int32 id, const Color& value);
 		void Set(int32 id, const int32* value, int32 count);
 		void Set(int32 id, const float* value, int32 count);

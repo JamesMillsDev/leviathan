@@ -4,17 +4,15 @@
 #include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Graphics/Texture.h"
+
 namespace Leviathan
 {
-	class Texture
-	{};
-
-	Material::Material(Shader* shader)
-		: m_shader{ shader }, m_vpLoc{ FindUniform("pv") }, m_modelLoc{ FindUniform("model") }, m_normalMatrixLoc{ FindUniform("normMatrix") },
-		m_cameraLocationLoc{ FindUniform("cameraLocation") }
-	{
-
-	}
+	Material::Material(Shader* shader) :
+		m_shader{ shader }, m_vpLoc{ FindUniform("pv") }, m_modelLoc{ FindUniform("model") },
+		m_normalMatrixLoc{ FindUniform("normMatrix") },
+		m_cameraLocationLoc{ FindUniform("cameraLocation") }, m_lastTextureSlot{ 0 }
+	{}
 
 	void Material::SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value)
 	{
@@ -31,6 +29,16 @@ namespace Leviathan
 		};
 
 		m_properties.Add(id, property);
+	}
+
+	void Material::SetTexture(const string& id, Texture* texture)
+	{
+		if (m_textures.ContainsKey(id))
+		{
+			return;
+		}
+
+		m_textures.Add(id, { .loc = FindUniform(id), .texture = texture, .slot = m_lastTextureSlot++ });
 	}
 
 	void Material::Set(const string& name, const int32 value)
@@ -68,9 +76,9 @@ namespace Leviathan
 		Set(FindUniform(name), value);
 	}
 
-	void Material::Set(const string& name, Texture value)
+	void Material::Set(const string& name, const Texture& value, const int32 slot)
 	{
-		// TODO:
+		Set(FindUniform(name), value, slot);
 	}
 
 	void Material::Set(const string& name, const Color& value)
@@ -183,9 +191,16 @@ namespace Leviathan
 		glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(value[0]));
 	}
 
-	void Material::Set(int32 id, Texture value)
+	void Material::Set(const int32 id, const Texture& value, const int32 slot)
 	{
-		// TODO
+		if (id == -1)
+		{
+			return;
+		}
+
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_2D, value.Handle());
+		glUniform1i(id, slot);
 	}
 
 	void Material::Set(const int32 id, const Color& value)
@@ -275,41 +290,47 @@ namespace Leviathan
 			switch (auto& [loc, type, value] = property->Value(); type)
 			{
 				case EMaterialPropertyType::Int:
-					{
-						Set(loc, value.iValue);
-						break;
-					}
+				{
+					Set(loc, value.iValue);
+					break;
+				}
 				case EMaterialPropertyType::Float:
-					{
-						Set(loc, value.fValue);
-						break;
-					}
+				{
+					Set(loc, value.fValue);
+					break;
+				}
 				case EMaterialPropertyType::Vec2:
-					{
-						Set(loc, value.v2Value);
-						break;
-					}
+				{
+					Set(loc, value.v2Value);
+					break;
+				}
 				case EMaterialPropertyType::Vec3:
-					{
-						Set(loc, value.v3Value);
-						break;
-					}
+				{
+					Set(loc, value.v3Value);
+					break;
+				}
 				case EMaterialPropertyType::Vec4:
-					{
-						Set(loc, value.v4Value);
-						break;
-					}
+				{
+					Set(loc, value.v4Value);
+					break;
+				}
 				case EMaterialPropertyType::Mat3:
-					{
-						Set(loc, value.m3Value);
-						break;
-					}
+				{
+					Set(loc, value.m3Value);
+					break;
+				}
 				case EMaterialPropertyType::Mat4:
-					{
-						Set(loc, value.m4Value);
-						break;
-					}
+				{
+					Set(loc, value.m4Value);
+					break;
+				}
 			}
+		}
+
+		for (TMapEntry<string, MaterialTextureProperty>* textureProperty : m_textures)
+		{
+			auto& [loc, texture, slot] = textureProperty->Value();
+			Set(loc, *texture, slot);
 		}
 	}
 

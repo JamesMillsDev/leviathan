@@ -144,6 +144,7 @@ namespace Leviathan
 		GLFWwindow* window = glfwGetCurrentContext();
 
 		m_pressedKeys.Clear();
+		m_mouseScroll = 0;
 
 		// Update keys
 		for (int i = GLFW_KEY_SPACE; i <= GLFW_KEY_LAST; ++i)

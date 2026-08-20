@@ -40,7 +40,7 @@ namespace Leviathan
 	void OrbitCamera::Rotate(const vec2 delta, const float sensitivity)
 	{
 		m_yaw += delta.x * sensitivity;
-		m_pitch += delta.y * sensitivity;
+		m_pitch -= delta.y * sensitivity;
 
 		m_pitch = glm::clamp(m_pitch, m_minPitch, m_maxPitch);
 	}

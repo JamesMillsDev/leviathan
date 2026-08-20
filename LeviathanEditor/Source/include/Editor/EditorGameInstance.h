@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Gameplay/GameInstance.h>
+#include <Utility/ResourceStack.h>
 
 #include <glm/mat4x4.hpp>
 
@@ -8,10 +9,12 @@ using glm::mat4;
 
 namespace Leviathan
 {
-    class Mesh;
+	class ResourceStack;
+	class Mesh;
     class Material;
-    class Shader;
     class OrbitCamera;
+    class Shader;
+    class Texture;
 
     class EditorGameInstance : public GameInstance
     {
@@ -29,6 +32,12 @@ namespace Leviathan
 
         OrbitCamera* m_orbitCamera;
 
+        Texture* m_baseColorTexture;
+        Texture* m_normalTexture;
+        Texture* m_ormTexture;
+
+        ResourceStack* m_resourceStack;
+
     public:
         EditorGameInstance();
 
@@ -37,6 +46,9 @@ namespace Leviathan
         void Tick() override;
         void Render() override;
         void Shutdown() override;
+
+    private:
+        void InitAndPush(const CleanupFunction& init, const CleanupFunction& cleanup) const;
 
     };
 }
