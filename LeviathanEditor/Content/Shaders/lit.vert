@@ -11,10 +11,11 @@ out VS_OUT
 
 uniform mat4 pv;
 uniform mat4 model;
+uniform mat3 normMatrix;
 
 void main()
 {
-	vs_out.normal = vec3(vertNormal);
+	vs_out.normal = normMatrix * vec3(vertNormal);
 	vs_out.worldLocation = vec3(model * vertLocation);
 
 	gl_Position = pv * model * vertLocation;

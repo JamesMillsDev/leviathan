@@ -24,8 +24,12 @@ namespace Leviathan
 			return;
 		}
 
-		material->Set(material->m_vpLoc, m_camera->Projection());
+		material->Set(material->m_vpLoc, m_camera->ProjectionView());
+		material->Set(material->m_cameraLocationLoc, m_camera->Location());
+
 		material->Set(material->m_modelLoc, transform);
+		material->Set(material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
+
 		material->SetMaterialProperties();
 		material->Set("lights[0].color", vec3{ 1.f });
 		material->Set("lights[0].location", vec3{ 1.2f, 1.0f, 2.0f });

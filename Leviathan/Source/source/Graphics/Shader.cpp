@@ -3,6 +3,7 @@
 #include <format>
 #include <fstream>
 #include <unordered_map>
+#include <glad/gl.h>
 
 #include "Utility/Console.h"
 #include "Utility/Collections/TList.h"

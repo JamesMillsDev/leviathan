@@ -62,6 +62,8 @@ namespace Leviathan
 		Shader* m_shader;
 		int32 m_vpLoc;
 		int32 m_modelLoc;
+		int32 m_normalMatrixLoc;
+		int32 m_cameraLocationLoc;
 		TMap<string, MaterialProperty> m_properties;
 
 	public:

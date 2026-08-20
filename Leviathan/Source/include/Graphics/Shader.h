@@ -1,18 +1,16 @@
 #pragma once
 
-#include <glad/gl.h>
-
 #include "Maths/Color.h"
 
 namespace Leviathan
 {
 	enum class EShaderStage : uint16
 	{
-		Vertex = GL_VERTEX_SHADER,
-		Fragment = GL_FRAGMENT_SHADER,
-		Geometry = GL_GEOMETRY_SHADER,
-		TesselationControl = GL_TESS_CONTROL_SHADER,
-		TesselationEvaluation = GL_TESS_EVALUATION_SHADER,
+		Vertex = 0x8B31,
+		Fragment = 0x8B30,
+		Geometry = 0x8DD9,
+		TesselationControl = 0x8E88,
+		TesselationEvaluation = 0x8E87,
 	};
 
 	class Shader

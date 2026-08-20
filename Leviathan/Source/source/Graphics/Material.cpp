@@ -10,7 +10,8 @@ namespace Leviathan
 	{};
 
 	Material::Material(Shader* shader)
-		: m_shader{ shader }, m_vpLoc{ FindUniform("pv") }, m_modelLoc{ FindUniform("model") }
+		: m_shader{ shader }, m_vpLoc{ FindUniform("pv") }, m_modelLoc{ FindUniform("model") }, m_normalMatrixLoc{ FindUniform("normMatrix") },
+		m_cameraLocationLoc{ FindUniform("cameraLocation") }
 	{
 
 	}

@@ -9,6 +9,7 @@ in VS_OUT
 struct Material
 {
 	vec3 tint;
+	float specularStrength;
 };
 
 struct Light
@@ -25,12 +26,19 @@ const int MAX_LIGHT_COUNT = 16;
 uniform int lightCount;
 uniform Light lights[MAX_LIGHT_COUNT];
 
+uniform vec3 cameraLocation;
+
 out vec4 fragColor;
 
 void main()
 {
 	vec3 norm = normalize(fs_in.normal);
 	vec3 lightDir = normalize(lights[0].location - fs_in.worldLocation);
+	vec3 viewDir = normalize(cameraLocation - fs_in.worldLocation);
+	vec3 reflectDir = reflect(-lightDir, norm);
+
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128);
+	vec3 specular = lights[0].color * material.specularStrength * spec;
 
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = lights[0].color * diff;
@@ -38,6 +46,6 @@ void main()
 	float ambientStrength = 0.1;
 	vec3 ambient = lights[0].color * ambientStrength;
 
-	vec3 result = (ambient + diffuse) * material.tint;
+	vec3 result = (ambient + diffuse + specular) * material.tint;
 	fragColor = vec4(result, 1.0);
 }

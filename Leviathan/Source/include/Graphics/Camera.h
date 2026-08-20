@@ -15,15 +15,15 @@ namespace Leviathan
 		float m_nearPlane;
 		float m_farPlane;
 
-		float m_theta;
-		float m_phi;
-		vec3 m_location;
-
 	public:
 		explicit Camera(float fov = 90.f, float near = .1f, float far = 1000.f);
+		virtual ~Camera() = default;
 
 	public:
 		mat4 Projection() const;
+		virtual mat4 View() const = 0;
+		virtual vec3 Location() const = 0;
 
+		mat4 ProjectionView() const;
 	};
 }
