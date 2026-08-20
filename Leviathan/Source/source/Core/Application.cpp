@@ -4,6 +4,7 @@
 #include <glm/ext/matrix_transform.hpp>
 
 #include "Core/GameTime.h"
+#include "Core/Input.h"
 #include "Core/Window.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
@@ -37,6 +38,9 @@ namespace Leviathan
 		// Attempt to open the window
 		if (m_window->Open())
 		{
+			Input::Create();
+			GameTime::Init();
+
 			Shader* shader = new Shader{ "Shaders/lit" };
 			Material* material = new Material{ shader };
 			material->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f, .5f, .31f } });
@@ -56,14 +60,7 @@ namespace Leviathan
 
 			m_renderer->m_camera = camera;
 
-			GameTime::Init();
-
-			GLFWwindow* window = m_window->m_window;
-
-			double mouseX, mouseY;
-			glfwGetCursorPos(window, &mouseX, &mouseY);
-
-			double oldMouseX = mouseX, oldMouseY = mouseY;
+			Input* input = Input::GetInstance();
 
 			// The window opened successfully, so run the render loop
 			while (m_window->IsOpen())
@@ -76,15 +73,10 @@ namespace Leviathan
 					continue;
 				}
 
-				oldMouseX = mouseX, oldMouseY = mouseY;
-				glfwGetCursorPos(window, &mouseX, &mouseY);
-				if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS)
+				if (input->IsMouseButtonDown(EInputCodes::MouseButtonRight))
 				{
-					vec2 mouseDelta
-					{
-						static_cast<float>(mouseX - oldMouseX),
-						static_cast<float>(mouseY - oldMouseY)
-					};
+					vec2 mouseDelta{};
+					input->GetMouseDelta(&mouseDelta.x, &mouseDelta.y);
 
 					camera->Rotate(mouseDelta); 
 				}
@@ -94,6 +86,8 @@ namespace Leviathan
 
 				// Present the current window
 				m_window->Present();
+
+				input->ClearStatus();
 			}
 
 			delete cubeMaterial;
