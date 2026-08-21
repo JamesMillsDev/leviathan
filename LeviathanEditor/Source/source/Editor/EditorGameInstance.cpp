@@ -22,7 +22,7 @@ namespace Leviathan
 	EditorGameInstance::EditorGameInstance() :
 		m_litShader{ nullptr }, m_unlitShader{ nullptr }, m_lightMesh{ nullptr },
 		m_lightMaterial{ nullptr }, m_shaderBallMesh{ nullptr }, m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr },
-		m_floorMaterial{ nullptr }, m_orbitCamera{ new OrbitCamera }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
+		m_floorMaterial{ nullptr }, m_orbitCamera{ nullptr }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
 		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr },
 		m_resourceStack{ new ResourceStack }, m_shadowPass{ nullptr }
 	{
@@ -37,6 +37,16 @@ namespace Leviathan
 
 	void EditorGameInstance::Init()
 	{
+		InitAndPush(
+			[this]
+			{
+				m_orbitCamera = new OrbitCamera;
+			},
+			[this]
+			{
+				delete m_orbitCamera;
+			}
+		);
 		// Shaders
 		InitAndPush(
 			[this]
@@ -156,7 +166,7 @@ namespace Leviathan
 							"lightSpaceMatrix", EMaterialPropertyType::Mat4, { .m4Value = projection * view }
 						);
 					});
-				 
+
 				m_shadowPass->useCameraValues = false;
 
 				m_renderer->InsertRenderPass(m_shadowPass, 1);
@@ -207,7 +217,6 @@ namespace Leviathan
 	void EditorGameInstance::Shutdown()
 	{
 		delete m_resourceStack;
-		delete m_orbitCamera;
 	}
 
 	void EditorGameInstance::InitAndPush(const CleanupFunction& init, const CleanupFunction& cleanup) const
