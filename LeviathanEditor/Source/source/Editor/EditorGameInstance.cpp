@@ -8,7 +8,6 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "Core/Input.h"
-#include "Graphics/FrameBuffer.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
@@ -28,6 +27,7 @@ namespace Leviathan
 		m_resourceStack{ new ResourceStack }, m_shadowPass{ nullptr }
 	{
 		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
+		m_shaderBallTransform = glm::translate(m_shaderBallTransform, { 0.f, -.02f, 0.f });
 
 		m_lightTransform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
 		m_lightTransform = glm::scale(m_lightTransform, vec3{ .2f });
@@ -155,7 +155,7 @@ namespace Leviathan
 						m_floorMaterial->SetMaterialProperty(
 							"lightSpaceMatrix", EMaterialPropertyType::Mat4, { .m4Value = projection * view }
 						);
-					}); 
+					});
 				 
 				m_shadowPass->useCameraValues = false;
 
@@ -191,6 +191,10 @@ namespace Leviathan
 
 			m_orbitCamera->Rotate(mouseDelta);
 			m_orbitCamera->Zoom(input->GetMouseScroll());
+		}
+		else
+		{
+			m_orbitCamera->Rotate({ 2.f, 0.f });
 		}
 	}
 
