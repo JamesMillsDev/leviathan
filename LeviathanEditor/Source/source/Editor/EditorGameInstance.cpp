@@ -41,6 +41,7 @@ namespace Leviathan
 			[this]
 			{
 				m_orbitCamera = new OrbitCamera;
+				m_renderer->SetActiveCamera(m_orbitCamera);
 			},
 			[this]
 			{
@@ -79,21 +80,6 @@ namespace Leviathan
 				delete m_rebarOrm;
 				delete m_rebarNormal;
 				delete m_rebarBaseColor;
-			}
-		);
-		// Light cube
-		InitAndPush(
-			[this]
-			{
-				m_lightMesh = Mesh::MakeCube();
-
-				m_lightMaterial = new Material{ m_unlitShader };
-				m_lightMaterial->SetMaterialProperty("material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } });
-			},
-			[this]
-			{
-				delete m_lightMaterial;
-				delete m_lightMesh;
 			}
 		);
 		// Shader ball
@@ -177,8 +163,6 @@ namespace Leviathan
 				delete m_shadowPass;
 			}
 		);
-
-		m_renderer->SetActiveCamera(m_orbitCamera);
 	}
 
 	void EditorGameInstance::Tick()
