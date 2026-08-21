@@ -342,12 +342,12 @@ namespace Leviathan
 
 		TList vertices =
 		{
-			Vertex{.location = points[0], .normal = norm, .tangent = tangents[0], .uvs = { uvs[0] }, .color = Color::WHITE },
-			Vertex{.location = points[1], .normal = norm, .tangent = tangents[0], .uvs = { uvs[1] }, .color = Color::WHITE },
 			Vertex{.location = points[2], .normal = norm, .tangent = tangents[0], .uvs = { uvs[2] }, .color = Color::WHITE },
-			Vertex{.location = points[0], .normal = norm, .tangent = tangents[1], .uvs = { uvs[0] }, .color = Color::WHITE },
-			Vertex{.location = points[2], .normal = norm, .tangent = tangents[1], .uvs = { uvs[2] }, .color = Color::WHITE },
+			Vertex{.location = points[1], .normal = norm, .tangent = tangents[0], .uvs = { uvs[1] }, .color = Color::WHITE },
+			Vertex{.location = points[0], .normal = norm, .tangent = tangents[0], .uvs = { uvs[0] }, .color = Color::WHITE },
 			Vertex{.location = points[3], .normal = norm, .tangent = tangents[1], .uvs = { uvs[3] }, .color = Color::WHITE },
+			Vertex{.location = points[2], .normal = norm, .tangent = tangents[1], .uvs = { uvs[2] }, .color = Color::WHITE },
+			Vertex{.location = points[0], .normal = norm, .tangent = tangents[1], .uvs = { uvs[0] }, .color = Color::WHITE },
 		};
 
 		TList<SubMesh*> subMeshes;

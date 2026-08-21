@@ -22,7 +22,7 @@ namespace Leviathan
 		m_litShader{ nullptr }, m_unlitShader{ nullptr }, m_lightMesh{ nullptr },
 		m_lightMaterial{ nullptr }, m_shaderBallMesh{ nullptr }, m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr },
 		m_floorMaterial{ nullptr }, m_orbitCamera{ new OrbitCamera }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
-		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr }, m_depthBuffer{ nullptr },
+		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr },
 		m_resourceStack{ new ResourceStack }
 	{
 		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
@@ -58,19 +58,9 @@ namespace Leviathan
 
 				m_woodFloorBaseColor = new Texture{ "Content/Textures/T_WoodFloor_BC.png" };
 				m_woodFloorNormal = new Texture{ "Content/Textures/T_WoodFloor_N.png" };
-
-				m_depthBuffer = new FrameBuffer{ 1024, 1024, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT, GL_NEAREST, GL_REPEAT };
-				m_depthBuffer->Bind();
-
-				glDrawBuffer(GL_NONE);
-				glReadBuffer(GL_NONE);
-
-				m_depthBuffer->Unbind();
 			},
 			[this]
 			{
-				delete m_depthBuffer;
-
 				delete m_woodFloorNormal;
 				delete m_woodFloorBaseColor;
 

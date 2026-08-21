@@ -28,5 +28,10 @@ namespace Leviathan
 
 		void Unbind();
 
+		[[nodiscard]] uint32 Handle() const;
+		[[nodiscard]] uint32 TextureHandle() const;
+		[[nodiscard]] int32 Width() const;
+		[[nodiscard]] int32 Height() const;
+
 	};
 }

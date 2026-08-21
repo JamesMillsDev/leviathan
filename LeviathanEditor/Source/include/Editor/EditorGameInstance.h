@@ -44,8 +44,6 @@ namespace Leviathan
         Texture* m_woodFloorBaseColor;
         Texture* m_woodFloorNormal;
 
-        FrameBuffer* m_depthBuffer;
-
         ResourceStack* m_resourceStack;
 
     public:

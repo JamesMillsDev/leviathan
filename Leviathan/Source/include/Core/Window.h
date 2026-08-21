@@ -8,6 +8,8 @@ struct GLFWwindow;
 
 using std::weak_ptr;
 
+extern void FramebufferSizeCallback(GLFWwindow*, int32 width, int32 height);
+
 namespace Leviathan
 {
 	class Config;
@@ -15,6 +17,8 @@ namespace Leviathan
 	class Window
 	{
 		friend class Application;
+		friend class Renderer;
+		friend void ::FramebufferSizeCallback(GLFWwindow*, int32 width, int32 height);
 
 	private:
 		struct PrivateKey
@@ -33,6 +37,8 @@ namespace Leviathan
 
 	public:
 		[[nodiscard]] bool IsOpen() const;
+
+		void Clear(uint32 layer) const;
 
 	private:
 		[[nodiscard]] bool Open();

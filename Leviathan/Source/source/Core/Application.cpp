@@ -47,6 +47,7 @@ namespace Leviathan
 			Input::Create();
 			GameTime::Init();
 
+			m_renderer->Init(m_window);
 			m_game->m_renderer = m_renderer;
 			m_game->Init();
 
@@ -65,6 +66,7 @@ namespace Leviathan
 				m_game->Render();
 
 				// Present the current window and clear the input status
+				m_renderer->Render();
 				m_window->Present();
 				Input::GetInstance()->ClearStatus();
 			}
@@ -73,6 +75,7 @@ namespace Leviathan
 
 			// Close the window safely
 			Input::Destroy();
+			m_renderer->Shutdown();
 			m_window->Close();
 
 			return EXIT_SUCCESS;

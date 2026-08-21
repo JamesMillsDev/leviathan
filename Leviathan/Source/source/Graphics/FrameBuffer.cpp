@@ -22,7 +22,11 @@ namespace Leviathan
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrap);
 
+		Bind();
 		glFramebufferTexture2D(GL_FRAMEBUFFER, m_attachment, GL_TEXTURE_2D, m_textureHandle, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		Unbind();
 	}
 
 	FrameBuffer::~FrameBuffer()
@@ -45,5 +49,25 @@ namespace Leviathan
 	void FrameBuffer::Unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	uint32 FrameBuffer::Handle() const
+	{
+		return m_handle;
+	}
+
+	uint32 FrameBuffer::TextureHandle() const
+	{
+		return m_textureHandle;
+	}
+
+	int32 FrameBuffer::Width() const
+	{
+		return m_width;
+	}
+
+	int32 FrameBuffer::Height() const
+	{
+		return m_height;
 	}
 }

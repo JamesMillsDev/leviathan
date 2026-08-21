@@ -6,16 +6,21 @@
 #include <Utility/Config.h>
 #include <Utility/Console.h>
 
-namespace
-{
-	void FramebufferSizeCallback(GLFWwindow* _, const int32 width, const int32 height)
-	{
-		glViewport(0, 0, width, height);
+#include "Core/Application.h"
 
-	#if IS_EDITOR
-		glScissor(0, 0, width, height);
-	#endif
+void FramebufferSizeCallback(GLFWwindow* _, const int32 width, const int32 height)
+{
+	if (auto win = Leviathan::Application::Instance()->GetWindow().lock())
+	{
+		win->m_width = width;
+		win->m_height = height;
 	}
+
+	glViewport(0, 0, width, height);
+
+#if IS_EDITOR
+	glScissor(0, 0, width, height);
+#endif
 }
 
 namespace Leviathan
@@ -35,6 +40,12 @@ namespace Leviathan
 	bool Window::IsOpen() const
 	{
 		return !glfwWindowShouldClose(m_window);
+	}
+
+	void Window::Clear(const uint32 layer) const
+	{
+		glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
+		glClear(layer);
 	}
 
 	bool Window::Open()
@@ -62,11 +73,12 @@ namespace Leviathan
 
 		glViewport(0, 0, m_width, m_height);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		
-	#if IS_EDITOR
+		#if IS_EDITOR
 		glEnable(GL_SCISSOR_TEST);
-	#endif
+		#endif
 
 		glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback);
 		return true;
@@ -86,9 +98,6 @@ namespace Leviathan
 		{
 			return false;
 		}
-
-		glClearColor(m_clearColor.r, m_clearColor.g, m_clearColor.b, m_clearColor.a);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		return true;
 	}
