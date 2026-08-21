@@ -24,7 +24,7 @@ namespace Leviathan
 	RenderPass::RenderPass(FrameBuffer* fb, const mat4& prjMatrix) :
 		viewLocation{ 0.f }, viewMatrix{ 1.f }, projectionMatrix{ prjMatrix }, frameBuffer{ fb },
 		useCameraValues{ true }, clearMask{ GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT }, cullFaceMode{ GL_BACK },
-		useFaceCulling{ true }, m_cameraSettingsGetter{ nullptr }
+		useFaceCulling{ true }, m_cameraSettingsGetter{ nullptr }, m_preRender{ nullptr }
 	{}
 
 	RenderPass::~RenderPass() = default;
@@ -39,10 +39,20 @@ namespace Leviathan
 		m_cameraSettingsGetter = getter;
 	}
 
+	void RenderPass::SetPreRenderFnc(const function<void()>& preRenderFnc)
+	{
+		m_preRender = preRenderFnc;
+	}
+
 	void RenderPass::Render(const shared_ptr<Window>& window)
 	{
 		// Clear the screen with the correct mask
 		window->Clear(clearMask);
+
+		if (m_preRender != nullptr)
+		{
+			m_preRender();
+		}
 
 		// Render each item in the queue
 		while (!m_renderQueue.empty())
@@ -101,7 +111,7 @@ namespace Leviathan
 					material->Set(material->m_modelLoc, transform);
 					material->Set(material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
 
-					material->SetMaterialProperties();
+					material->SetMaterialProperties(m_shadowMap->TextureHandle());
 					material->Set("lights[0].color", vec3{ 1.f });
 					material->Set("lights[0].location", vec3{ 1.2f, 1.0f, 2.0f });
 
@@ -115,6 +125,11 @@ namespace Leviathan
 		return m_shadowMap;
 	}
 
+	RenderPass* Renderer::GetMainRenderPass() const
+	{
+		return m_mainRenderPass;
+	}
+
 	void Renderer::Init(const shared_ptr<Window>& window)
 	{
 		m_window = window;
@@ -126,14 +141,16 @@ namespace Leviathan
 
 		m_depthBuffer = new FrameBuffer{
 			m_window->m_width, m_window->m_height, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT,
-			GL_NEAREST, GL_REPEAT
+			GL_NEAREST, GL_CLAMP_TO_BORDER
 		};
 
 		RenderPass* fullDepthPass = new RenderPass{ m_depthBuffer, mat4{ 1.f } };
 		fullDepthPass->clearMask = GL_DEPTH_BUFFER_BIT;
 
+		m_mainRenderPass = new RenderPass;
+
 		AddRenderPass(fullDepthPass);
-		AddRenderPass(new RenderPass); // Regular render pass
+		AddRenderPass(m_mainRenderPass);
 	}
 
 	void Renderer::Render()

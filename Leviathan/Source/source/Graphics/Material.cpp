@@ -11,7 +11,7 @@ namespace Leviathan
 	Material::Material(Shader* shader) :
 		m_shader{ shader }, m_vpLoc{ FindUniform("pv") }, m_modelLoc{ FindUniform("model") },
 		m_normalMatrixLoc{ FindUniform("normMatrix") },
-		m_cameraLocationLoc{ FindUniform("cameraLocation") }, m_lastTextureSlot{ 0 }
+		m_cameraLocationLoc{ FindUniform("cameraLocation") }, m_lastTextureSlot{ 0 }, m_isLit{ true }
 	{}
 
 	void Material::SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value)
@@ -39,6 +39,11 @@ namespace Leviathan
 		}
 
 		m_textures.Add(id, { .loc = FindUniform(id), .texture = texture, .slot = m_lastTextureSlot++ });
+	}
+
+	void Material::SetLitState(bool isLit)
+	{
+		m_isLit = isLit;
 	}
 
 	void Material::Set(const string& name, const int32 value)
@@ -283,7 +288,7 @@ namespace Leviathan
 		glUniformMatrix4fv(id, count, GL_FALSE, glm::value_ptr(value[0]));
 	}
 
-	void Material::SetMaterialProperties()
+	void Material::SetMaterialProperties(uint32 shadowMapHandle)
 	{
 		for (TMapEntry<string, MaterialProperty>* property : m_properties)
 		{
@@ -327,10 +332,23 @@ namespace Leviathan
 			}
 		}
 
+		int32 maxSlot = 0;
 		for (TMapEntry<string, MaterialTextureProperty>* textureProperty : m_textures)
 		{
 			auto& [loc, texture, slot] = textureProperty->Value();
 			Set(loc, *texture, slot);
+
+			maxSlot = std::max(maxSlot, slot);
+		}
+
+		if (m_isLit)
+		{
+			glActiveTexture(GL_TEXTURE0 + maxSlot + 1);
+			glBindTexture(GL_TEXTURE_2D, shadowMapHandle);
+			Set("shadows.map", maxSlot + 1);
+			Set("shadows.bias", .04f);
+			Set("shadows.texelSize", .5f);
+			Set("shadows.samples", 2); 
 		}
 	}
 

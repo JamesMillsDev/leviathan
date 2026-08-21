@@ -10,11 +10,13 @@ out VS_OUT
 	vec3 worldLocation;
 	vec2 uv0;
 	mat3 tbn;
+	vec4 worldLocationLightSpace;
 } vs_out;
 
 uniform mat4 pv;
 uniform mat4 model;
 uniform mat3 normMatrix;
+uniform mat4 lightSpaceMatrix;
 
 void main()
 {
@@ -26,6 +28,7 @@ void main()
 	vec3 B = normalize(cross(T, N));
 
 	vs_out.tbn = transpose(mat3(T, B, N));
+	vs_out.worldLocationLightSpace = lightSpaceMatrix * vec4(vs_out.worldLocation, 1.0);
 
 	gl_Position = pv * model * vertLocation;
 }

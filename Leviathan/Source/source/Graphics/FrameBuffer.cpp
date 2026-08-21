@@ -22,6 +22,9 @@ namespace Leviathan
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrap);
 
+		float borderColor[] = { 1.f, 1.f, 1.f, 1.f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
 		Bind();
 		glFramebufferTexture2D(GL_FRAMEBUFFER, m_attachment, GL_TEXTURE_2D, m_textureHandle, 0);
 		glDrawBuffer(GL_NONE);

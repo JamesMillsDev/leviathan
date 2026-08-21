@@ -3,11 +3,12 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <glm/vec3.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "Core/Input.h"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/gtc/quaternion.hpp"
+#include "Graphics/FrameBuffer.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
@@ -24,7 +25,7 @@ namespace Leviathan
 		m_lightMaterial{ nullptr }, m_shaderBallMesh{ nullptr }, m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr },
 		m_floorMaterial{ nullptr }, m_orbitCamera{ new OrbitCamera }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
 		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr },
-		m_resourceStack{ new ResourceStack }
+		m_resourceStack{ new ResourceStack }, m_shadowPass{ nullptr }
 	{
 		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
 
@@ -147,10 +148,15 @@ namespace Leviathan
 						vec3 lightPos = m_lightTransform[3];
 						vec3 ballPos = m_shaderBallTransform[3];
 
-						projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, .1f, 100.f);
+						projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 7.5f);
 						view = glm::lookAt(lightPos, ballPos, vec3{ 0.f, 1.f, 0.f });
 						location = lightPos;
-					});
+
+						m_floorMaterial->SetMaterialProperty(
+							"lightSpaceMatrix", EMaterialPropertyType::Mat4, { .m4Value = projection * view }
+						);
+					}); 
+				 
 				m_shadowPass->useCameraValues = false;
 
 				m_renderer->InsertRenderPass(m_shadowPass, 1);

@@ -73,6 +73,8 @@ namespace Leviathan
 		int32 m_cameraLocationLoc;
 		int32 m_lastTextureSlot;
 
+		bool m_isLit;
+
 		TMap<string, MaterialProperty> m_properties;
 		TMap<string, MaterialTextureProperty> m_textures;
 
@@ -82,6 +84,8 @@ namespace Leviathan
 	public:
 		void SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value);
 		void SetTexture(const string& id, Texture* texture);
+
+		void SetLitState(bool isLit);
 
 		void Set(const string& name, int32 value);
 		void Set(const string& name, float value);
@@ -118,7 +122,7 @@ namespace Leviathan
 		void Set(int32 id, mat4* value, int32 count);
 		
 	private:
-		void SetMaterialProperties();
+		void SetMaterialProperties(uint32 shadowMapHandle);
 		bool Bind() const;
 
 		int32 FindUniform(const string& name) const;

@@ -41,6 +41,7 @@ namespace Leviathan
 	private:
 		queue<function<void()>> m_renderQueue;
 		function<void(mat4&, mat4&, vec3&)> m_cameraSettingsGetter;
+		function<void()> m_preRender;
 
 	public:
 		RenderPass();
@@ -51,6 +52,7 @@ namespace Leviathan
 	public:
 		void QueueRender(const function<void()>& fnc);
 		void SetCameraSettingsGetter(const function<void(mat4&, mat4&, vec3&)>& getter);
+		void SetPreRenderFnc(const function<void()>& preRenderFnc);
 
 	private:
 		void Render(const shared_ptr<Window>& window);
@@ -69,12 +71,7 @@ namespace Leviathan
 		FrameBuffer* m_shadowMap;
 		FrameBuffer* m_depthBuffer;
 
-		/**
-		 * Pass 1: Full Depth Map
-		 * Pass 2: Shadow Map
-		 * Pass 3: Regular Color Map
-		 * TODO: Pass 4: Post-Processing
-		 */
+		RenderPass* m_mainRenderPass;
 		TList<RenderPass*> m_renderPasses;
 
 	private:
@@ -93,6 +90,7 @@ namespace Leviathan
 		void Render(Material* material, Mesh* mesh, const mat4& transform);
 
 		[[nodiscard]] FrameBuffer* GetShadowMap() const;
+		[[nodiscard]] RenderPass* GetMainRenderPass() const;
 
 	private:
 		void Init(const shared_ptr<Window>& window);
