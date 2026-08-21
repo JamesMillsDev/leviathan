@@ -27,10 +27,7 @@ namespace Leviathan
 		useFaceCulling{ true }, m_cameraSettingsGetter{ nullptr }
 	{}
 
-	RenderPass::~RenderPass()
-	{
-		delete frameBuffer;
-	}
+	RenderPass::~RenderPass() = default;
 
 	void RenderPass::QueueRender(const function<void()>& fnc)
 	{
@@ -77,6 +74,11 @@ namespace Leviathan
 		m_renderPasses.Insert(pass, index);
 	}
 
+	void Renderer::RemoveRenderPass(RenderPass* pass)
+	{
+		m_renderPasses.Remove(pass);
+	}
+
 	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform)
 	{
 		if (m_camera == nullptr)
@@ -86,7 +88,7 @@ namespace Leviathan
 
 		for (RenderPass* pass : m_renderPasses)
 		{
-			pass->m_renderQueue.emplace([this, material, mesh, transform, pass]
+			pass->m_renderQueue.push([this, material, mesh, transform, pass]
 				{
 					if (!material->Bind())
 					{
@@ -106,6 +108,11 @@ namespace Leviathan
 					mesh->Render();
 				});
 		}
+	}
+
+	FrameBuffer* Renderer::GetShadowMap() const
+	{
+		return m_shadowMap;
 	}
 
 	void Renderer::Init(const shared_ptr<Window>& window)
@@ -193,6 +200,12 @@ namespace Leviathan
 
 	void Renderer::Shutdown() const
 	{
+		for (RenderPass* pass : m_renderPasses)
+		{
+			delete pass;
+		}
+
+		delete m_depthBuffer;
 		delete m_shadowMap;
 	}
 }

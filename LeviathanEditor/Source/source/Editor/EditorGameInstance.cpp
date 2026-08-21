@@ -6,7 +6,8 @@
 #include <glm/ext/matrix_transform.hpp>
 
 #include "Core/Input.h"
-#include "Graphics/FrameBuffer.h"
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/gtc/quaternion.hpp"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
@@ -135,6 +136,31 @@ namespace Leviathan
 				delete m_floorMesh;
 			}
 		);
+		// Render Passes
+		InitAndPush(
+			[this]
+			{
+				m_shadowPass = new RenderPass{ m_renderer->GetShadowMap(), mat4{ 1.f } };
+
+				m_shadowPass->SetCameraSettingsGetter([this](mat4& projection, mat4& view, vec3& location)
+					{
+						vec3 lightPos = m_lightTransform[3];
+						vec3 ballPos = m_shaderBallTransform[3];
+
+						projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, .1f, 100.f);
+						view = glm::lookAt(lightPos, ballPos, vec3{ 0.f, 1.f, 0.f });
+						location = lightPos;
+					});
+				m_shadowPass->useCameraValues = false;
+
+				m_renderer->InsertRenderPass(m_shadowPass, 1);
+			},
+			[this]
+			{
+				m_renderer->RemoveRenderPass(m_shadowPass);
+				delete m_shadowPass;
+			}
+		);
 
 		m_renderer->SetActiveCamera(m_orbitCamera);
 	}
@@ -164,7 +190,6 @@ namespace Leviathan
 
 	void EditorGameInstance::Render()
 	{
-		m_renderer->Render(m_lightMaterial, m_lightMesh, m_lightTransform);
 		m_renderer->Render(m_floorMaterial, m_floorMesh, m_floorTransform);
 		m_renderer->Render(m_shaderBallMaterial, m_shaderBallMesh, m_shaderBallTransform);
 	}

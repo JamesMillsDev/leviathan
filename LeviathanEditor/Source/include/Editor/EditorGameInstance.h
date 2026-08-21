@@ -9,7 +9,7 @@ using glm::mat4;
 
 namespace Leviathan
 {
-	class FrameBuffer;
+	class RenderPass;
 	class ResourceStack;
 	class Mesh;
     class Material;
@@ -45,6 +45,8 @@ namespace Leviathan
         Texture* m_woodFloorNormal;
 
         ResourceStack* m_resourceStack;
+
+        RenderPass* m_shadowPass;
 
     public:
         EditorGameInstance();

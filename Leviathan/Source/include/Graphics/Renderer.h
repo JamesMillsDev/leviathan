@@ -88,8 +88,11 @@ namespace Leviathan
 		void SetActiveCamera(Camera* camera);
 		void AddRenderPass(RenderPass* pass);
 		void InsertRenderPass(RenderPass* pass, int64 index);
+		void RemoveRenderPass(RenderPass* pass);
 
 		void Render(Material* material, Mesh* mesh, const mat4& transform);
+
+		[[nodiscard]] FrameBuffer* GetShadowMap() const;
 
 	private:
 		void Init(const shared_ptr<Window>& window);
