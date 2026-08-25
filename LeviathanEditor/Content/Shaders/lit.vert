@@ -5,18 +5,23 @@ layout(location = 1) in vec4 vertNormal;
 layout(location = 2) in vec4 vertTangent;
 layout(location = 3) in vec2 vertUv0;
 
+const int MAX_LIGHT_COUNT = 16;
+
 out VS_OUT
 {
 	vec3 worldLocation;
 	vec2 uv0;
 	mat3 tbn;
-	vec4 worldLocationLightSpace;
+	vec4 worldLocationsLightSpace[MAX_LIGHT_COUNT];
+	float lightCount;
 } vs_out;
 
 uniform mat4 pv;
 uniform mat4 model;
 uniform mat3 normMatrix;
-uniform mat4 lightSpaceMatrix;
+
+uniform int lightCount;
+uniform mat4 lightSpaceMatrices[MAX_LIGHT_COUNT];
 
 void main()
 {
@@ -28,7 +33,12 @@ void main()
 	vec3 B = normalize(cross(T, N));
 
 	vs_out.tbn = transpose(mat3(T, B, N));
-	vs_out.worldLocationLightSpace = lightSpaceMatrix * vec4(vs_out.worldLocation, 1.0);
+	vs_out.lightCount = lightCount;
+
+	for(int i = 0; i < lightCount; ++i)
+	{
+		vs_out.worldLocationsLightSpace[i] = lightSpaceMatrices[i] * vec4(vs_out.worldLocation, 1.0);
+	}
 
 	gl_Position = pv * model * vertLocation;
 }

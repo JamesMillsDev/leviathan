@@ -1,13 +1,18 @@
 #include "Editor/EditorGameInstance.h"
 
 #include <glad/gl.h>
+
 #include <GLFW/glfw3.h>
+
 #include <glm/vec3.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 #include "Core/Input.h"
+
+#include "Graphics/Light.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
@@ -20,17 +25,14 @@ using glm::vec3;
 namespace Leviathan
 {
 	EditorGameInstance::EditorGameInstance() :
-		m_litShader{ nullptr }, m_unlitShader{ nullptr }, m_lightMesh{ nullptr },
-		m_lightMaterial{ nullptr }, m_shaderBallMesh{ nullptr }, m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr },
-		m_floorMaterial{ nullptr }, m_orbitCamera{ nullptr }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
+		m_litShader{ nullptr }, m_unlitShader{ nullptr }, m_shaderBallMesh{ nullptr },
+		m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr }, m_floorMaterial{ nullptr },
+		m_orbitCamera{ nullptr }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
 		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr },
-		m_resourceStack{ new ResourceStack }, m_shadowPass{ nullptr }
+		m_resourceStack{ new ResourceStack }, m_light{ nullptr }
 	{
 		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
 		m_shaderBallTransform = glm::translate(m_shaderBallTransform, { 0.f, -.02f, 0.f });
-
-		m_lightTransform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
-		m_lightTransform = glm::scale(m_lightTransform, vec3{ .2f });
 
 		m_floorTransform = glm::scale(mat4{ 1.f }, vec3{ 4.f });
 	}
@@ -133,34 +135,19 @@ namespace Leviathan
 				delete m_floorMesh;
 			}
 		);
-		// Render Passes
+		// Light
 		InitAndPush(
 			[this]
 			{
-				m_shadowPass = new RenderPass{ m_renderer->GetShadowMap(), mat4{ 1.f } };
-
-				m_shadowPass->SetCameraSettingsGetter([this](mat4& projection, mat4& view, vec3& location)
-					{
-						vec3 lightPos = m_lightTransform[3];
-						vec3 ballPos = m_shaderBallTransform[3];
-
-						projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 7.5f);
-						view = glm::lookAt(lightPos, ballPos, vec3{ 0.f, 1.f, 0.f });
-						location = lightPos;
-
-						m_floorMaterial->SetMaterialProperty(
-							"lightSpaceMatrix", EMaterialPropertyType::Mat4, { .m4Value = projection * view }
-						);
-					});
-
-				m_shadowPass->useCameraValues = false;
-
-				m_renderer->InsertRenderPass(m_shadowPass, 1);
+				m_light = new Light;
+				//m_light->transform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
+				m_light->transform = glm::lookAt(vec3{ 1.2f, 1.f, 2.f }, vec3{ 0.f, -.02f, 0.f }, vec3{ 0.f, 1.f, 0.f });
+				m_renderer->AddLight(m_light);
 			},
 			[this]
 			{
-				m_renderer->RemoveRenderPass(m_shadowPass);
-				delete m_shadowPass;
+				m_renderer->RemoveLight(m_light);
+				delete m_light;
 			}
 		);
 	}

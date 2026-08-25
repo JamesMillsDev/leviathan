@@ -3,8 +3,13 @@
 #include <glad/gl.h>
 
 #include "Core/Window.h"
+
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
+
 #include "Graphics/Camera.h"
 #include "Graphics/FrameBuffer.h"
+#include "Graphics/Light.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Utility/Config.h"
@@ -24,7 +29,7 @@ namespace Leviathan
 	RenderPass::RenderPass(FrameBuffer* fb, const mat4& prjMatrix) :
 		viewLocation{ 0.f }, viewMatrix{ 1.f }, projectionMatrix{ prjMatrix }, frameBuffer{ fb },
 		useCameraValues{ true }, clearMask{ GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT }, cullFaceMode{ GL_BACK },
-		useFaceCulling{ true }, m_cameraSettingsGetter{ nullptr }, m_preRender{ nullptr }
+		useFaceCulling{ true }, m_cameraTransformGetter{ nullptr }, m_lightMatrixGetter{ nullptr }, m_preRender{ nullptr }
 	{}
 
 	RenderPass::~RenderPass() = default;
@@ -34,9 +39,14 @@ namespace Leviathan
 		m_renderQueue.emplace(fnc);
 	}
 
-	void RenderPass::SetCameraSettingsGetter(const function<void(mat4&, mat4&, vec3&)>& getter)
+	void RenderPass::SetCameraSettingsGetter(const CameraTransformGetter& getter)
 	{
-		m_cameraSettingsGetter = getter;
+		m_cameraTransformGetter = getter;
+	}
+
+	void RenderPass::SetLightMatrixGetter(const LightMatrixGetter& getter)
+	{
+		m_lightMatrixGetter = getter;
 	}
 
 	void RenderPass::SetPreRenderFnc(const function<void()>& preRenderFnc)
@@ -62,16 +72,24 @@ namespace Leviathan
 		}
 	}
 
-	Renderer::Renderer(PrivateKey)
-		: m_camera{ nullptr }, m_config{ std::make_shared<Config>("Renderer") }, m_shadowMap{ nullptr },
-		m_depthBuffer{ nullptr }
-	{
-
-	}
+	Renderer::Renderer(PrivateKey) :
+		m_camera{ nullptr }, m_config{ std::make_shared<Config>("Renderer") }, m_shadowMap{ nullptr },
+		m_depthBuffer{ nullptr }, m_mainRenderPass{ nullptr }
+	{}
 
 	void Renderer::SetActiveCamera(Camera* camera)
 	{
 		m_camera = camera;
+	}
+
+	void Renderer::AddLight(Light* light)
+	{
+		m_lights.Add(light);
+	}
+
+	void Renderer::RemoveLight(Light* light)
+	{
+		m_lights.Remove(light);
 	}
 
 	void Renderer::AddRenderPass(RenderPass* pass)
@@ -105,6 +123,27 @@ namespace Leviathan
 						return;
 					}
 
+					material->Set("lightCount", static_cast<int32>(m_lights.Count()));
+					for (int32 i = 0; i < static_cast<int32>(m_lights.Count()); ++i)
+					{
+						m_lights[i]->SetMaterialProperties(material, i);
+
+						if (pass->m_lightMatrixGetter != nullptr)
+						{
+							mat4 projection;
+							mat4 view;
+							pass->m_lightMatrixGetter(m_lights[i], projection, view);
+
+							material->Set(std::format("lightSpaceMatrices[{}]", i), projection * view);
+						}
+					}
+
+					if (pass->m_lightMatrixGetter != nullptr && !pass->useCameraValues)
+					{
+						pass->m_lightMatrixGetter(m_lights[0], pass->projectionMatrix, pass->viewMatrix);
+						pass->viewLocation = m_lights[0]->transform[3];
+					}
+
 					material->Set(material->m_vpLoc, pass->projectionMatrix * pass->viewMatrix);
 					material->Set(material->m_cameraLocationLoc, pass->viewLocation);
 
@@ -112,8 +151,6 @@ namespace Leviathan
 					material->Set(material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
 
 					material->SetMaterialProperties(m_shadowMap->TextureHandle());
-					material->Set("lights[0].color", vec3{ 1.f });
-					material->Set("lights[0].location", vec3{ 1.2f, 1.0f, 2.0f });
 
 					mesh->Render();
 				});
@@ -147,9 +184,18 @@ namespace Leviathan
 		RenderPass* fullDepthPass = new RenderPass{ m_depthBuffer, mat4{ 1.f } };
 		fullDepthPass->clearMask = GL_DEPTH_BUFFER_BIT;
 
+		RenderPass* shadowPass = new RenderPass{ m_shadowMap, mat4{ 1.f } };
+		shadowPass->useCameraValues = false;
+		shadowPass->SetLightMatrixGetter([this](const Light* light, mat4& projection, mat4& view)
+			{
+				projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 7.5f);
+				view = light->transform;
+			});
+
 		m_mainRenderPass = new RenderPass;
 
 		AddRenderPass(fullDepthPass);
+		AddRenderPass(shadowPass);
 		AddRenderPass(m_mainRenderPass);
 	}
 
@@ -181,9 +227,9 @@ namespace Leviathan
 				pass->projectionMatrix = m_camera->Projection();
 				pass->viewLocation = m_camera->Location();
 			}
-			else if (pass->m_cameraSettingsGetter != nullptr)
+			else if (pass->m_cameraTransformGetter != nullptr)
 			{
-				pass->m_cameraSettingsGetter(pass->projectionMatrix, pass->viewMatrix, pass->viewLocation);
+				pass->m_cameraTransformGetter(pass->projectionMatrix, pass->viewMatrix, pass->viewLocation);
 			}
 
 			// If this pass has a frame buffer, bind it and set the viewport

@@ -12,6 +12,7 @@ namespace Leviathan
 	class RenderPass;
 	class ResourceStack;
 	class Mesh;
+    class Light;
     class Material;
     class OrbitCamera;
     class Shader;
@@ -22,10 +23,6 @@ namespace Leviathan
     private:
         Shader* m_litShader;
         Shader* m_unlitShader;
-
-        Mesh* m_lightMesh;
-        Material* m_lightMaterial;
-        mat4 m_lightTransform;
 
         Mesh* m_shaderBallMesh;
         Material* m_shaderBallMaterial;
@@ -46,7 +43,7 @@ namespace Leviathan
 
         ResourceStack* m_resourceStack;
 
-        RenderPass* m_shadowPass;
+        Light* m_light;
 
     public:
         EditorGameInstance();

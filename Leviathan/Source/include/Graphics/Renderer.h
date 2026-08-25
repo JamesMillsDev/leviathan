@@ -13,14 +13,19 @@ using std::queue;
 using glm::mat4;
 using glm::vec3;
 
+using CameraTransformGetter = function<void(mat4&, mat4&, vec3&)>;
+
 namespace Leviathan
 {
 	class Config;
 	class Camera;
 	class FrameBuffer;
+	class Light;
 	class Mesh;
 	class Material;
 	class Window;
+
+	using LightMatrixGetter = function<void(Light*, mat4&, mat4&)>;
 
 	class RenderPass
 	{
@@ -40,7 +45,8 @@ namespace Leviathan
 
 	private:
 		queue<function<void()>> m_renderQueue;
-		function<void(mat4&, mat4&, vec3&)> m_cameraSettingsGetter;
+		CameraTransformGetter m_cameraTransformGetter;
+		LightMatrixGetter m_lightMatrixGetter;
 		function<void()> m_preRender;
 
 	public:
@@ -51,12 +57,13 @@ namespace Leviathan
 
 	public:
 		void QueueRender(const function<void()>& fnc);
-		void SetCameraSettingsGetter(const function<void(mat4&, mat4&, vec3&)>& getter);
+		void SetCameraSettingsGetter(const CameraTransformGetter& getter);
+		void SetLightMatrixGetter(const LightMatrixGetter& getter);
 		void SetPreRenderFnc(const function<void()>& preRenderFnc);
 
 	private:
 		void Render(const shared_ptr<Window>& window);
-			
+
 	};
 
 	class Renderer
@@ -73,6 +80,7 @@ namespace Leviathan
 
 		RenderPass* m_mainRenderPass;
 		TList<RenderPass*> m_renderPasses;
+		TList<Light*> m_lights;
 
 	private:
 		struct PrivateKey
@@ -83,6 +91,9 @@ namespace Leviathan
 
 	public:
 		void SetActiveCamera(Camera* camera);
+		void AddLight(Light* light);
+		void RemoveLight(Light* light);
+
 		void AddRenderPass(RenderPass* pass);
 		void InsertRenderPass(RenderPass* pass, int64 index);
 		void RemoveRenderPass(RenderPass* pass);

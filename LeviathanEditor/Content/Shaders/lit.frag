@@ -1,11 +1,14 @@
 #version 460
 
+const int MAX_LIGHT_COUNT = 16;
+
 in VS_OUT
 {
 	vec3 worldLocation;
 	vec2 uv0;
 	mat3 tbn;
-	vec4 worldLocationLightSpace;
+	vec4 worldLocationsLightSpace[MAX_LIGHT_COUNT];
+	float lightCount;
 } fs_in;
 
 struct Material
@@ -35,8 +38,6 @@ struct Shadows
 
 uniform Material material;
 
-const int MAX_LIGHT_COUNT = 16;
-uniform int lightCount;
 uniform Light lights[MAX_LIGHT_COUNT];
 
 uniform Shadows shadows;
@@ -95,7 +96,17 @@ void main()
 	vec3 ambient = lights[0].color * ambientStrength;
 
 	float bias = max(0.05 * (1.0 - dot(norm, lightDir)), shadows.bias);
-	float shadow = ShadowCalculation(fs_in.worldLocationLightSpace, bias);
+	
+	float shadow = 0.0;
+	for(int i = 0; i < fs_in.lightCount; ++i)
+	{
+		shadow += ShadowCalculation(fs_in.worldLocationsLightSpace[i], bias);
+	}
+
+	if(fs_in.lightCount > 1)
+	{
+		shadow /= fs_in.lightCount; // normalize the shadow value
+	}
 
 	vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) * material.tint;
 
