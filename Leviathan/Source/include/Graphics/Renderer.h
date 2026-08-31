@@ -17,6 +17,7 @@ using CameraTransformGetter = function<void(mat4&, mat4&, vec3&)>;
 
 namespace Leviathan
 {
+	class GBuffer;
 	class Config;
 	class Camera;
 	class FrameBuffer;
@@ -49,6 +50,7 @@ namespace Leviathan
 		CameraTransformGetter m_cameraTransformGetter;
 		LightMatrixGetter m_lightMatrixGetter;
 		function<void()> m_preRender;
+		function<void()> m_postRender;
 
 	public:
 		RenderPass();
@@ -61,6 +63,7 @@ namespace Leviathan
 		void SetCameraSettingsGetter(const CameraTransformGetter& getter);
 		void SetLightMatrixGetter(const LightMatrixGetter& getter);
 		void SetPreRenderFnc(const function<void()>& preRenderFnc);
+		void SetPostRenderFnc(const function<void()>& postRenderFnc);
 
 	private:
 		void Render(const shared_ptr<Window>& window);
@@ -82,6 +85,8 @@ namespace Leviathan
 		RenderPass* m_mainRenderPass;
 		TList<RenderPass*> m_renderPasses;
 		TList<Light*> m_lights;
+
+		GBuffer* m_gBuffer;
 
 	private:
 		struct PrivateKey

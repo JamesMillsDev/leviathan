@@ -10,6 +10,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/Cameras/Camera.h"
 #include "Graphics/Textures/FrameBuffer.h"
+#include "Graphics/Textures/GBuffer.h"
 #include "Utility/Config.h"
 
 namespace Leviathan
@@ -53,6 +54,11 @@ namespace Leviathan
 		m_preRender = preRenderFnc;
 	}
 
+	void RenderPass::SetPostRenderFnc(const function<void()>& postRenderFnc)
+	{
+		m_postRender = postRenderFnc;
+	}
+
 	void RenderPass::Render(const shared_ptr<Window>& window)
 	{
 		// Clear the screen with the correct mask
@@ -69,11 +75,16 @@ namespace Leviathan
 			m_renderQueue.front()();
 			m_renderQueue.pop();
 		}
+
+		if (m_postRender != nullptr)
+		{
+			m_postRender();
+		}
 	}
 
 	Renderer::Renderer(PrivateKey) :
 		m_camera{ nullptr }, m_config{ std::make_shared<Config>("Renderer") }, m_shadowMap{ nullptr },
-		m_depthBuffer{ nullptr }, m_mainRenderPass{ nullptr }
+		m_depthBuffer{ nullptr }, m_mainRenderPass{ nullptr }, m_gBuffer{ nullptr }
 	{}
 
 	void Renderer::SetActiveCamera(Camera* camera)
@@ -191,11 +202,24 @@ namespace Leviathan
 				view = glm::inverse(light->transform);
 			});
 
+		m_gBuffer = new GBuffer{ window->m_width, window->m_height };
+
+		RenderPass* testGPass = new RenderPass;
+		testGPass->SetPreRenderFnc([this]
+			{
+				m_gBuffer->Bind();
+			});
+		testGPass->SetPostRenderFnc([this]
+			{
+				m_gBuffer->Unbind();
+			});
+
 		m_mainRenderPass = new RenderPass;
 		m_mainRenderPass->useShadowMapping = true;
 
 		AddRenderPass(fullDepthPass);
 		AddRenderPass(shadowPass);
+		AddRenderPass(testGPass);
 		AddRenderPass(m_mainRenderPass);
 	}
 
@@ -268,6 +292,7 @@ namespace Leviathan
 			delete pass;
 		}
 
+		delete m_gBuffer;
 		delete m_depthBuffer;
 		delete m_shadowMap;
 	}

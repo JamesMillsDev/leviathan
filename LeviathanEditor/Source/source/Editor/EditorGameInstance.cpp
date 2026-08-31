@@ -54,7 +54,7 @@ namespace Leviathan
 		InitAndPush(
 			[this]
 			{
-				m_litShader = new Shader{ "Shaders/lit" };
+				m_litShader = new Shader{ "Shaders/gbuffer" };
 				m_unlitShader = new Shader{ "Shaders/unlit" };
 			},
 			[this]
