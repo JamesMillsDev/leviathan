@@ -9,7 +9,7 @@ using glm::mat4;
 
 namespace Leviathan
 {
-	class RenderPass;
+	class RenderPass_Dep;
 	class ResourceStack;
 	class Mesh;
     class Light;

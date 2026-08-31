@@ -6,6 +6,7 @@
 #include <glm/mat4x4.hpp>
 
 #include "Utility/Collections/TList.h"
+#include "Utility/EnumHelpers.h"
 
 using std::function;
 using std::shared_ptr;
@@ -28,7 +29,10 @@ namespace Leviathan
 
 	using LightMatrixGetter = function<void(Light*, mat4&, mat4&)>;
 
-	class RenderPass
+	/**
+	 * @deprecated This is being moved to a smarter version
+	 */
+	class RenderPass_Dep
 	{
 		friend class Renderer;
 
@@ -53,10 +57,10 @@ namespace Leviathan
 		function<void()> m_postRender;
 
 	public:
-		RenderPass();
-		explicit RenderPass(const mat4& prjMatrix);
-		explicit RenderPass(FrameBuffer* fb, const mat4& prjMatrix);
-		~RenderPass();
+		RenderPass_Dep();
+		explicit RenderPass_Dep(const mat4& prjMatrix);
+		explicit RenderPass_Dep(FrameBuffer* fb, const mat4& prjMatrix);
+		~RenderPass_Dep();
 
 	public:
 		void QueueRender(const function<void()>& fnc);
@@ -67,6 +71,67 @@ namespace Leviathan
 
 	private:
 		void Render(const shared_ptr<Window>& window);
+
+	};
+
+	/**
+	 * A set of flags that can determine what components the pass should render
+	 */
+	enum class EPassFeature : uint8
+	{
+		None = 0,
+		FaceCulling = 1 << 0,
+		Lighting = 1 << 1,
+		ShadowMapping = 1 << 2,
+		OverrideCameraMatrices = 1 << 3,
+		WritesGBuffer = 1 << 4,
+		ReadsGBuffer = 1 << 5,
+		WritesShadowMap = 1 << 6,
+	};
+
+	ENUM_OPERATORS(EPassFeature, uint8)
+
+	class RenderPass
+	{
+		friend class Renderer;
+
+		using VoidSignature = function<void()>;
+		using RenderFncSignature = function<void(const mat4&, const mat4&, const vec3&)>;
+		using CameraMatrixSignature = function<void(mat4&, mat4&, vec3&)>;
+		using LightMatrixSignature = function<void(Light*, mat4&, mat4&)>;
+
+	public:
+		EPassFeature features;
+
+		int32 cullFaceMode;
+		uint32 clearMask;
+
+		FrameBuffer* frameBuffer;
+
+	private:
+		queue<RenderFncSignature> m_renderFncs;
+
+		VoidSignature m_preRenderFnc;
+		VoidSignature m_postRenderFnc;
+
+		CameraMatrixSignature m_cameraMatrixGetter;
+		LightMatrixSignature m_lightMatrixGetter;
+
+	public:
+		RenderPass();
+
+	public:
+		void SetPreRenderFnc(const VoidSignature& preRender);
+		void SetPostRenderFnc(const VoidSignature& postRender);
+		void SetLightMatrixGetter(const LightMatrixSignature& getter);
+
+		void EnablePassFeature(EPassFeature feature) const;
+		void DisablePassFeature(EPassFeature feature) const;
+
+	private:
+		bool IsFeatureEnabled(EPassFeature feature) const;
+
+		void Render(const shared_ptr<Window>& window, const mat4& projection, const mat4& view, const vec3& location);
 
 	};
 
@@ -82,7 +147,8 @@ namespace Leviathan
 		FrameBuffer* m_shadowMap;
 		FrameBuffer* m_depthBuffer;
 
-		RenderPass* m_mainRenderPass;
+		RenderPass_Dep* m_mainRenderPass;
+		TList<RenderPass_Dep*> m_depRenderPasses;
 		TList<RenderPass*> m_renderPasses;
 		TList<Light*> m_lights;
 
@@ -100,17 +166,20 @@ namespace Leviathan
 		void AddLight(Light* light);
 		void RemoveLight(Light* light);
 
-		void AddRenderPass(RenderPass* pass);
-		void InsertRenderPass(RenderPass* pass, int64 index);
-		void RemoveRenderPass(RenderPass* pass);
+		void AddRenderPass(RenderPass_Dep* pass);
+		void InsertRenderPass(RenderPass_Dep* pass, int64 index);
+		void RemoveRenderPass(RenderPass_Dep* pass);
 
+		void Render_Dep(Material* material, Mesh* mesh, const mat4& transform);
 		void Render(Material* material, Mesh* mesh, const mat4& transform);
 
 		[[nodiscard]] FrameBuffer* GetShadowMap() const;
-		[[nodiscard]] RenderPass* GetMainRenderPass() const;
+		[[nodiscard]] RenderPass_Dep* GetMainRenderPass() const;
 
 	private:
 		void Init(const shared_ptr<Window>& window);
+		/** @deprecated Moving to new deferred render workflow  */
+		void Render_Dep();
 		void Render();
 		void Shutdown() const;
 

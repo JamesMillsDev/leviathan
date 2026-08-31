@@ -22,11 +22,10 @@ namespace Leviathan
 		~GBuffer();
 
 	private:
-		void Bind();
-		void Unbind();
+		void BeginRecording();
+		void FinishRecording();
 
-		void BindBuffers();
-		void Render();
+		void Bind();
 
 	};
 }

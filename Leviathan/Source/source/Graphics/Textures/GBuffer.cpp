@@ -48,7 +48,7 @@ namespace Leviathan
 		glDeleteFramebuffers(1, &m_handle);
 	}
 
-	void GBuffer::Bind()
+	void GBuffer::BeginRecording()
 	{
 		// Validate the handle isn't 0
 		if (m_handle == 0)
@@ -60,7 +60,7 @@ namespace Leviathan
 		m_bound = true;
 	}
 
-	void GBuffer::Unbind()
+	void GBuffer::FinishRecording()
 	{
 		if (!m_bound)
 		{
@@ -71,7 +71,7 @@ namespace Leviathan
 		m_bound = false;
 	}
 
-	void GBuffer::BindBuffers()
+	void GBuffer::Bind()
 	{
 		int index = 0;
 		for (const uint32 handle : m_bufferHandles)
@@ -79,10 +79,5 @@ namespace Leviathan
 			glActiveTexture(GL_TEXTURE0 + index++);
 			glBindTexture(GL_TEXTURE_2D, handle);
 		}
-	}
-
-	void GBuffer::Render()
-	{
-		
 	}
 }

@@ -15,51 +15,49 @@
 
 namespace Leviathan
 {
-	RenderPass::RenderPass()
-		: RenderPass{ nullptr, mat4{ 1.f } }
+	RenderPass_Dep::RenderPass_Dep() :
+		RenderPass_Dep{ nullptr, mat4{1.f} }
 	{}
 
-	RenderPass::RenderPass(const mat4& prjMatrix)
-		: RenderPass{ nullptr, prjMatrix }
-	{
+	RenderPass_Dep::RenderPass_Dep(const mat4& prjMatrix) :
+		RenderPass_Dep{ nullptr, prjMatrix }
+	{}
 
-	}
-
-	RenderPass::RenderPass(FrameBuffer* fb, const mat4& prjMatrix) :
+	RenderPass_Dep::RenderPass_Dep(FrameBuffer* fb, const mat4& prjMatrix) :
 		viewLocation{ 0.f }, viewMatrix{ 1.f }, projectionMatrix{ prjMatrix }, frameBuffer{ fb },
 		useCameraValues{ true }, clearMask{ GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT }, cullFaceMode{ GL_BACK },
 		useFaceCulling{ true }, useShadowMapping{ false }, m_cameraTransformGetter{ nullptr }, m_lightMatrixGetter{ nullptr },
 		m_preRender{ nullptr }
 	{}
 
-	RenderPass::~RenderPass() = default;
+	RenderPass_Dep::~RenderPass_Dep() = default;
 
-	void RenderPass::QueueRender(const function<void()>& fnc)
+	void RenderPass_Dep::QueueRender(const function<void()>& fnc)
 	{
 		m_renderQueue.emplace(fnc);
 	}
 
-	void RenderPass::SetCameraSettingsGetter(const CameraTransformGetter& getter)
+	void RenderPass_Dep::SetCameraSettingsGetter(const CameraTransformGetter& getter)
 	{
 		m_cameraTransformGetter = getter;
 	}
 
-	void RenderPass::SetLightMatrixGetter(const LightMatrixGetter& getter)
+	void RenderPass_Dep::SetLightMatrixGetter(const LightMatrixGetter& getter)
 	{
 		m_lightMatrixGetter = getter;
 	}
 
-	void RenderPass::SetPreRenderFnc(const function<void()>& preRenderFnc)
+	void RenderPass_Dep::SetPreRenderFnc(const function<void()>& preRenderFnc)
 	{
 		m_preRender = preRenderFnc;
 	}
 
-	void RenderPass::SetPostRenderFnc(const function<void()>& postRenderFnc)
+	void RenderPass_Dep::SetPostRenderFnc(const function<void()>& postRenderFnc)
 	{
 		m_postRender = postRenderFnc;
 	}
 
-	void RenderPass::Render(const shared_ptr<Window>& window)
+	void RenderPass_Dep::Render(const shared_ptr<Window>& window)
 	{
 		// Clear the screen with the correct mask
 		window->Clear(clearMask);
@@ -79,6 +77,65 @@ namespace Leviathan
 		if (m_postRender != nullptr)
 		{
 			m_postRender();
+		}
+	}
+
+	RenderPass::RenderPass() :
+		features{ EPassFeature::FaceCulling }, cullFaceMode{ GL_BACK },
+		clearMask{ GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT }, frameBuffer{ nullptr }
+	{}
+
+	void RenderPass::SetPreRenderFnc(const VoidSignature& preRender)
+	{
+		m_preRenderFnc = preRender;
+	}
+
+	void RenderPass::SetPostRenderFnc(const VoidSignature& postRender)
+	{
+		m_postRenderFnc = postRender;
+	}
+
+	void RenderPass::SetLightMatrixGetter(const LightMatrixSignature& getter)
+	{
+		m_lightMatrixGetter = getter;
+	}
+
+	void RenderPass::EnablePassFeature(const EPassFeature feature) const
+	{
+		features |= feature;
+	}
+
+	void RenderPass::DisablePassFeature(const EPassFeature feature) const
+	{
+		features &= ~feature;
+	}
+
+	bool RenderPass::IsFeatureEnabled(const EPassFeature feature) const
+	{
+		return (features & feature) == feature;
+	}
+
+	void RenderPass::Render(const shared_ptr<Window>& window, const mat4& projection, const mat4& view,
+		const vec3& location)
+	{
+		// Clear the screen with the correct mask
+		window->Clear(clearMask);
+
+		if (m_preRenderFnc != nullptr)
+		{
+			m_preRenderFnc();
+		}
+
+		// Render each item in the queue
+		while (!m_renderFncs.empty())
+		{
+			m_renderFncs.front()(projection, view, location);
+			m_renderFncs.pop();
+		}
+
+		if (m_postRenderFnc != nullptr)
+		{
+			m_postRenderFnc();
 		}
 	}
 
@@ -102,29 +159,29 @@ namespace Leviathan
 		m_lights.Remove(light);
 	}
 
-	void Renderer::AddRenderPass(RenderPass* pass)
+	void Renderer::AddRenderPass(RenderPass_Dep* pass)
 	{
-		m_renderPasses.Add(pass);
+		m_depRenderPasses.Add(pass);
 	}
 
-	void Renderer::InsertRenderPass(RenderPass* pass, const int64 index)
+	void Renderer::InsertRenderPass(RenderPass_Dep* pass, const int64 index)
 	{
-		m_renderPasses.Insert(pass, index);
+		m_depRenderPasses.Insert(pass, index);
 	}
 
-	void Renderer::RemoveRenderPass(RenderPass* pass)
+	void Renderer::RemoveRenderPass(RenderPass_Dep* pass)
 	{
-		m_renderPasses.Remove(pass);
+		m_depRenderPasses.Remove(pass);
 	}
 
-	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform)
+	void Renderer::Render_Dep(Material* material, Mesh* mesh, const mat4& transform)
 	{
 		if (m_camera == nullptr)
 		{
 			return;
 		}
 
-		for (RenderPass* pass : m_renderPasses)
+		for (RenderPass_Dep* pass : m_depRenderPasses)
 		{
 			pass->m_renderQueue.push([this, material, mesh, transform, pass]
 				{
@@ -167,12 +224,66 @@ namespace Leviathan
 		}
 	}
 
+	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform)
+	{
+		for (RenderPass* pass : m_renderPasses)
+		{
+			pass->m_renderFncs.emplace([this, material, mesh, transform, pass]
+			(const mat4& projection, const mat4& view, const vec3& viewLoc)
+				{
+					if (!material->Bind())
+					{
+						return;
+					}
+
+					if (pass->IsFeatureEnabled(EPassFeature::Lighting))
+					{
+						material->Set("lightCount", static_cast<int32>(m_lights.Count()));
+
+						for (int32 i = 0; i < static_cast<int32>(m_lights.Count()); ++i)
+						{
+							m_lights[i]->SetMaterialProperties(material, i);
+
+							if (pass->m_lightMatrixGetter != nullptr)
+							{
+								mat4 lightProjection;
+								mat4 lightView;
+								pass->m_lightMatrixGetter(m_lights[i], lightProjection, lightView);
+
+								material->Set(std::format("lightSpaceMatrices[{}]", i), lightProjection * lightView);
+							}
+						}
+					}
+
+					mat4 overrideProjection = projection;
+					mat4 overrideView = view;
+					vec3 overrideViewLoc = viewLoc;
+
+					if (pass->m_lightMatrixGetter != nullptr && pass->IsFeatureEnabled(EPassFeature::WritesShadowMap))
+					{
+						pass->m_lightMatrixGetter(m_lights[0], overrideProjection, overrideView);
+						overrideViewLoc = m_lights[0]->transform[3];
+					}
+
+					material->Set(material->m_vpLoc, overrideProjection * overrideView);
+					material->Set(material->m_cameraLocationLoc, overrideViewLoc);
+
+					material->Set(material->m_modelLoc, transform);
+					material->Set(material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
+
+					material->SetMaterialProperties(m_shadowMap->Handle(), pass->IsFeatureEnabled(EPassFeature::ShadowMapping));
+
+					mesh->Render();
+				});
+		}
+	}
+
 	FrameBuffer* Renderer::GetShadowMap() const
 	{
 		return m_shadowMap;
 	}
 
-	RenderPass* Renderer::GetMainRenderPass() const
+	RenderPass_Dep* Renderer::GetMainRenderPass() const
 	{
 		return m_mainRenderPass;
 	}
@@ -191,41 +302,51 @@ namespace Leviathan
 			GL_NEAREST, GL_CLAMP_TO_BORDER
 		};
 
-		RenderPass* fullDepthPass = new RenderPass{ m_depthBuffer, mat4{ 1.f } };
+		/*RenderPass_Dep* fullDepthPass = new RenderPass_Dep{ m_depthBuffer, mat4{1.f} };
 		fullDepthPass->clearMask = GL_DEPTH_BUFFER_BIT;
 
-		RenderPass* shadowPass = new RenderPass{ m_shadowMap, mat4{ 1.f } };
+		RenderPass_Dep* shadowPass = new RenderPass_Dep{ m_shadowMap, mat4{1.f} };
 		shadowPass->useCameraValues = false;
+		shadowPass->SetLightMatrixGetter([this](const Light* light, mat4& projection, mat4& view)
+			{
+				projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 7.5f);
+				view = glm::inverse(light->transform);
+			});*/
+
+		m_gBuffer = new GBuffer{ window->m_width, window->m_height };
+
+		RenderPass* gPass = new RenderPass;
+		gPass->EnablePassFeature(EPassFeature::WritesGBuffer);
+
+		RenderPass* fullDepthPass = new RenderPass;
+		fullDepthPass->frameBuffer = m_depthBuffer;
+		fullDepthPass->clearMask = GL_DEPTH_BUFFER_BIT;
+
+		RenderPass* shadowPass = new RenderPass;
+		shadowPass->frameBuffer = m_shadowMap;
+		shadowPass->EnablePassFeature(EPassFeature::OverrideCameraMatrices | EPassFeature::WritesShadowMap);
 		shadowPass->SetLightMatrixGetter([this](const Light* light, mat4& projection, mat4& view)
 			{
 				projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 7.5f);
 				view = glm::inverse(light->transform);
 			});
 
-		m_gBuffer = new GBuffer{ window->m_width, window->m_height };
+		m_renderPasses.Add(fullDepthPass);
+		m_renderPasses.Add(shadowPass);
+		m_renderPasses.Add(gPass);
 
-		RenderPass* testGPass = new RenderPass;
-		testGPass->SetPreRenderFnc([this]
-			{
-				m_gBuffer->Bind();
-			});
-		testGPass->SetPostRenderFnc([this]
-			{
-				m_gBuffer->Unbind();
-			});
+		//m_mainRenderPass = new RenderPass_Dep;
+		//m_mainRenderPass->useShadowMapping = true;
 
-		m_mainRenderPass = new RenderPass;
-		m_mainRenderPass->useShadowMapping = true;
-
-		AddRenderPass(fullDepthPass);
-		AddRenderPass(shadowPass);
-		AddRenderPass(testGPass);
-		AddRenderPass(m_mainRenderPass);
+		//AddRenderPass(fullDepthPass);
+		//AddRenderPass(shadowPass);
+		//AddRenderPass(testGPass);
+		//AddRenderPass(m_mainRenderPass);
 	}
 
-	void Renderer::Render()
+	void Renderer::Render_Dep()
 	{
-		for (RenderPass* pass : m_renderPasses)
+		for (RenderPass_Dep* pass : m_depRenderPasses)
 		{
 			// Get the current state of the face culling
 			int32 currentCullMode;
@@ -285,8 +406,74 @@ namespace Leviathan
 		}
 	}
 
+	void Renderer::Render()
+	{
+		vec3 cameraLoc;
+		mat4 projection, view;
+
+		for (RenderPass* pass : m_renderPasses)
+		{
+			// Get the current state of the face culling
+			int32 currentCullMode;
+			glGetIntegerv(GL_CULL_FACE_MODE, &currentCullMode);
+
+			// If there is a mismatch in the face culling enabled state, change it
+			if (!pass->IsFeatureEnabled(EPassFeature::FaceCulling))
+			{
+				glDisable(GL_CULL_FACE);
+			}
+
+			// If there is a mismatch in the face culling mode, change it
+			if (currentCullMode != pass->cullFaceMode)
+			{
+				glCullFace(pass->cullFaceMode);
+			}
+
+			// If we are overriding the camera matrices, run the getter
+			if (pass->IsFeatureEnabled(EPassFeature::OverrideCameraMatrices))
+			{
+				pass->m_cameraMatrixGetter(projection, view, cameraLoc);
+			}
+			else
+			{
+				// Use the default camera values
+				view = m_camera->View();
+				projection = m_camera->Projection();
+				cameraLoc = view[3];
+			}
+
+			// If this pass has a frame buffer, bind it and set the viewport
+			if (pass->frameBuffer != nullptr)
+			{
+				pass->frameBuffer->Bind();
+				glViewport(0, 0, pass->frameBuffer->Width(), pass->frameBuffer->Height());
+			}
+
+			pass->Render(m_window, projection, view, cameraLoc);
+
+			// If there was a frame buffer bound, unbind and reset the viewport to the screen.
+			if (pass->frameBuffer != nullptr)
+			{
+				pass->frameBuffer->Unbind();
+				glViewport(0, 0, m_window->m_width, m_window->m_height);
+			}
+
+			// Reenable face culling 
+			glEnable(GL_CULL_FACE);
+			if (currentCullMode != pass->cullFaceMode)
+			{
+				glCullFace(currentCullMode);
+			}
+		}
+	}
+
 	void Renderer::Shutdown() const
 	{
+		for (RenderPass_Dep* pass : m_depRenderPasses)
+		{
+			delete pass;
+		}
+
 		for (RenderPass* pass : m_renderPasses)
 		{
 			delete pass;
