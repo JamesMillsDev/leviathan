@@ -1,4 +1,4 @@
-#include "Graphics/FrameBuffer.h"
+#include "Graphics/Textures/FrameBuffer.h"
 
 #include <glad/gl.h>
 

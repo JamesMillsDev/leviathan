@@ -1,4 +1,4 @@
-#include "Graphics/Camera.h"
+#include "Graphics/Cameras/Camera.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/vec3.hpp>

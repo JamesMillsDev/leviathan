@@ -4,7 +4,7 @@
 #include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Graphics/Texture.h"
+#include "Graphics/Textures/Texture.h"
 
 namespace Leviathan
 {

@@ -17,7 +17,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Shader.h"
-#include "Graphics/Texture.h"
+#include "Graphics/Textures/Texture.h"
 #include "Graphics/Cameras/OrbitCamera.h"
 
 using glm::vec3;

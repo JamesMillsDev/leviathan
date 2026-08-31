@@ -1,17 +1,15 @@
 #include "Graphics/Renderer.h"
 
 #include <glad/gl.h>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include "Core/Window.h"
-
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
-
-#include "Graphics/Camera.h"
-#include "Graphics/FrameBuffer.h"
 #include "Graphics/Light.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Cameras/Camera.h"
+#include "Graphics/Textures/FrameBuffer.h"
 #include "Utility/Config.h"
 
 namespace Leviathan
