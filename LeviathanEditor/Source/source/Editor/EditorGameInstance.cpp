@@ -142,6 +142,7 @@ namespace Leviathan
 				m_light = new Light;
 				//m_light->transform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
 				m_light->transform = glm::lookAt(vec3{ 1.2f, 1.f, 2.f }, vec3{ 0.f, -.02f, 0.f }, vec3{ 0.f, 1.f, 0.f });
+				m_light->transform = glm::inverse(m_light->transform);
 				m_renderer->AddLight(m_light);
 			},
 			[this]

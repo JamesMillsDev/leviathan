@@ -348,7 +348,7 @@ namespace Leviathan
 			Set("shadows.map", maxSlot + 1);
 			Set("shadows.bias", .005f);
 			Set("shadows.texelSize", .5f);
-			Set("shadows.samples", 2); 
+			Set("shadows.samples", 2);
 		}
 	}
 

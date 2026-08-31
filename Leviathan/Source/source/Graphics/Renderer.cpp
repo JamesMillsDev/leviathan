@@ -190,7 +190,7 @@ namespace Leviathan
 		shadowPass->SetLightMatrixGetter([this](const Light* light, mat4& projection, mat4& view)
 			{
 				projection = glm::ortho(-10.f, 10.f, -10.f, 10.f, 1.f, 7.5f);
-				view = light->transform;
+				view = glm::inverse(light->transform);
 			});
 
 		m_mainRenderPass = new RenderPass;

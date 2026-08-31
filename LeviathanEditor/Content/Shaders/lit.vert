@@ -30,7 +30,8 @@ void main()
 
 	vec3 T = normalize(normMatrix * vec3(vertTangent));
 	vec3 N = normalize(normMatrix * vec3(vertNormal));
-	vec3 B = normalize(cross(T, N));
+	T = normalize(T - dot(T, N) * N);          // Gram-Schmidt re-orthogonalize, cheap insurance
+	vec3 B = cross(N, T) * vertTangent.w;      // apply handedness from the .w component
 
 	vs_out.tbn = transpose(mat3(T, B, N));
 	vs_out.lightCount = lightCount;

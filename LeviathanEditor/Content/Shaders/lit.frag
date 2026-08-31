@@ -95,7 +95,7 @@ void main()
 		vec3 halfwayDir = normalize(lightDir + viewDir);
 
 		// Calculate shadow for this specific light
-		float bias = max(0.01 * (1.0 - dot(norm, lightDir)), shadows.bias);
+		float bias = max(0.05 * (1.0 - dot(norm, lightDir)), shadows.bias);
 		float shadow = ShadowCalculation(fs_in.worldLocationsLightSpace[i], bias);
 
 		float diff = max(dot(norm, lightDir), 0.0);

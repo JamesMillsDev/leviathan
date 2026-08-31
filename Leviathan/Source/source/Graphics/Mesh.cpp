@@ -142,11 +142,16 @@ namespace Leviathan
 				}
 
 				// If there are any tangents, copy them across
-				if (mesh->HasTangentsAndBitangents())
+				if (mesh->HasTangentsAndBitangents()) 
 				{
 					aiVector3D tangent = mesh->mTangents[vertIndex];
+					aiVector3D bitangent = mesh->mBitangents[vertIndex];
+					aiVector3D normal = mesh->mNormals[vertIndex];
 
-					vert.tangent = { tangent.x, tangent.y, tangent.z, 0.f };
+					// handedness: does the assimp-provided bitangent agree with cross(N, T)?
+					float handedness = (normal ^ tangent) * bitangent < 0.f ? -1.f : 1.f;
+
+					vert.tangent = { tangent.x, tangent.y, tangent.z, handedness }; 
 				}
 
 				// Iterate over each possible UV channel
