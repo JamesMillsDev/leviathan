@@ -72,6 +72,7 @@ namespace Leviathan
 		}
 
 		glViewport(0, 0, m_width, m_height);
+		glEnable(GL_FRAMEBUFFER_SRGB);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -80,7 +81,7 @@ namespace Leviathan
 		glEnable(GL_SCISSOR_TEST);
 		#endif
 
-		glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback);
+		glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback); 
 		return true;
 	}
 

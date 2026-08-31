@@ -8,7 +8,7 @@ in VS_OUT
 	vec2 uv0;
 	mat3 tbn;
 	vec4 worldLocationsLightSpace[MAX_LIGHT_COUNT];
-	float lightCount;
+	flat int lightCount;
 } fs_in;
 
 struct Material
@@ -77,38 +77,38 @@ float ShadowCalculation(vec4 fragPosLightSpace, float bias)
 
 void main()
 {
-	vec3 normSample = texture2D(material.normalMap, fs_in.uv0).rgb;
-	vec4 baseColor = texture2D(material.baseColor, fs_in.uv0);
+	vec3 normSample = texture(material.normalMap, fs_in.uv0).rgb;
+	vec4 baseColor = texture(material.baseColor, fs_in.uv0);
+	vec3 norm = normalize(normSample * 2.0 - 1.0);
 
-	vec3 norm = normSample * 2.0 - 1.0;
-
-	vec3 lightDir = fs_in.tbn * normalize(lights[0].location - fs_in.worldLocation);
-	vec3 viewDir = fs_in.tbn * normalize(cameraLocation - fs_in.worldLocation);
-	vec3 halfwayDir = normalize(lightDir + viewDir);
-
-	float spec = pow(max(dot(norm, halfwayDir), 0.0), 64.0);
-	vec3 specular = lights[0].color * material.specularStrength * spec;
-
-	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = lights[0].color * baseColor.rgb * diff;
-
-	float ambientStrength = 0.1;
-	vec3 ambient = lights[0].color * ambientStrength;
-
-	float bias = max(0.05 * (1.0 - dot(norm, lightDir)), shadows.bias);
+	// Global baseline ambient light (always visible even if shadows block everything)
+	vec3 ambient = vec3(0.1) * baseColor.rgb; 
+	vec3 totalDiffuseSpecular = vec3(0.0);
 	
-	float shadow = 0.0;
+	vec3 viewDir = normalize(fs_in.tbn * (cameraLocation - fs_in.worldLocation));
+
+	// Loop strictly up to the active light count
 	for(int i = 0; i < fs_in.lightCount; ++i)
 	{
-		shadow += ShadowCalculation(fs_in.worldLocationsLightSpace[i], bias);
+		// Since they are directional lights, light location acts as the target position vector
+		vec3 lightDir = normalize(fs_in.tbn * lights[i].direction);
+		vec3 halfwayDir = normalize(lightDir + viewDir);
+
+		// Calculate shadow for this specific light
+		float bias = max(0.01 * (1.0 - dot(norm, lightDir)), shadows.bias);
+		float shadow = ShadowCalculation(fs_in.worldLocationsLightSpace[i], bias);
+
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = lights[i].color * baseColor.rgb * diff;
+
+		float spec = pow(max(dot(norm, halfwayDir), 0.0), 64.0);
+		spec *= step(0.0, dot(norm, lightDir));   // gate specular on the same test as diffuse
+		vec3 specular = lights[i].color * material.specularStrength * spec;
+
+		// Accumulate light calculations independently
+		totalDiffuseSpecular += (1.0 - shadow) * (diffuse + specular);
 	}
 
-	if(fs_in.lightCount > 1)
-	{
-		shadow /= fs_in.lightCount; // normalize the shadow value
-	}
-
-	vec3 result = (ambient + (1.0 - shadow) * (diffuse + specular)) * material.tint;
-
+	vec3 result = (ambient + totalDiffuseSpecular) * material.tint;
 	fragColor = vec4(result, 1.0);
 }

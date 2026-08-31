@@ -42,6 +42,7 @@ namespace Leviathan
 
 		int32 cullFaceMode;
 		bool useFaceCulling;
+		bool useShadowMapping;
 
 	private:
 		queue<function<void()>> m_renderQueue;

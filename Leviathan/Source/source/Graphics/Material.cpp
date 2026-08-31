@@ -288,7 +288,7 @@ namespace Leviathan
 		glUniformMatrix4fv(id, count, GL_FALSE, glm::value_ptr(value[0]));
 	}
 
-	void Material::SetMaterialProperties(uint32 shadowMapHandle)
+	void Material::SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping)
 	{
 		for (TMapEntry<string, MaterialProperty>* property : m_properties)
 		{
@@ -341,12 +341,12 @@ namespace Leviathan
 			maxSlot = std::max(maxSlot, slot);
 		}
 
-		if (m_isLit)
+		if (m_isLit && useShadowMapping)
 		{
 			glActiveTexture(GL_TEXTURE0 + maxSlot + 1);
 			glBindTexture(GL_TEXTURE_2D, shadowMapHandle);
 			Set("shadows.map", maxSlot + 1);
-			Set("shadows.bias", .04f);
+			Set("shadows.bias", .005f);
 			Set("shadows.texelSize", .5f);
 			Set("shadows.samples", 2); 
 		}

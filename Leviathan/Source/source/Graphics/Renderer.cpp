@@ -29,7 +29,8 @@ namespace Leviathan
 	RenderPass::RenderPass(FrameBuffer* fb, const mat4& prjMatrix) :
 		viewLocation{ 0.f }, viewMatrix{ 1.f }, projectionMatrix{ prjMatrix }, frameBuffer{ fb },
 		useCameraValues{ true }, clearMask{ GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT }, cullFaceMode{ GL_BACK },
-		useFaceCulling{ true }, m_cameraTransformGetter{ nullptr }, m_lightMatrixGetter{ nullptr }, m_preRender{ nullptr }
+		useFaceCulling{ true }, useShadowMapping{ false }, m_cameraTransformGetter{ nullptr }, m_lightMatrixGetter{ nullptr },
+		m_preRender{ nullptr }
 	{}
 
 	RenderPass::~RenderPass() = default;
@@ -150,7 +151,7 @@ namespace Leviathan
 					material->Set(material->m_modelLoc, transform);
 					material->Set(material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
 
-					material->SetMaterialProperties(m_shadowMap->TextureHandle());
+					material->SetMaterialProperties(m_shadowMap->TextureHandle(), pass->useShadowMapping);
 
 					mesh->Render();
 				});
@@ -173,7 +174,7 @@ namespace Leviathan
 
 		m_shadowMap = new FrameBuffer{
 			m_config->Get<int32>("Shadows.Map.Width"), m_config->Get<int32>("Shadows.Map.Height"),
-			GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT, GL_NEAREST, GL_REPEAT
+			GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT, GL_NEAREST, GL_CLAMP_TO_BORDER
 		};
 
 		m_depthBuffer = new FrameBuffer{
@@ -193,6 +194,7 @@ namespace Leviathan
 			});
 
 		m_mainRenderPass = new RenderPass;
+		m_mainRenderPass->useShadowMapping = true;
 
 		AddRenderPass(fullDepthPass);
 		AddRenderPass(shadowPass);

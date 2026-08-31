@@ -122,7 +122,7 @@ namespace Leviathan
 		void Set(int32 id, mat4* value, int32 count);
 		
 	private:
-		void SetMaterialProperties(uint32 shadowMapHandle);
+		void SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping);
 		bool Bind() const;
 
 		int32 FindUniform(const string& name) const;
