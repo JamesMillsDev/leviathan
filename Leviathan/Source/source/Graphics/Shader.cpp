@@ -55,7 +55,7 @@ namespace Leviathan
 				glGetShaderInfoLog(handle, INFO_LOG_LENGTH, nullptr, infoLog);
 				Console::Error(std::format("SHADER STAGE {} FAILED TO COMPILE!", static_cast<int32>(type))); 
 				compiled = false;
-			}
+			} 
 
 			file.close();
 			return;

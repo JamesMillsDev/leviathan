@@ -1,9 +1,16 @@
 #pragma once
 
+#include <string>
+
 #include "Utility/Collections/TList.h"
+#include "Utility/Collections/TMap.h"
+
+using std::string;
 
 namespace Leviathan
 {
+	class Material;
+
 	class GBuffer
 	{
 		friend class Renderer;
@@ -15,7 +22,7 @@ namespace Leviathan
 		uint32 m_handle;
 		bool m_bound;
 
-		TList<uint32> m_bufferHandles;
+		TMap<string, uint32> m_bufferHandles;
 
 	private:
 		GBuffer(int32 w, int32 h);
@@ -25,7 +32,7 @@ namespace Leviathan
 		void BeginRecording();
 		void FinishRecording();
 
-		void Bind();
+		void Bind(Material* gBufferShader);
 
 	};
 }
