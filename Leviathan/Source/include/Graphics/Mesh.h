@@ -30,6 +30,7 @@ namespace Leviathan
 
 	class Mesh
 	{
+		friend class DepthBuffer;
 		friend class GBuffer;
 		friend class Lighting;
 		friend class Renderer;

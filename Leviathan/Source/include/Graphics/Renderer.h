@@ -1,9 +1,14 @@
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <queue>
+
 #include <glm/mat4x4.hpp>
 
+using std::queue;
 using std::shared_ptr;
+
 using glm::mat4;
 using glm::vec3;
 
@@ -11,13 +16,15 @@ namespace Leviathan
 {
 	class Camera;
 	class Config;
-	class FrameBuffer;
+	class DepthBuffer;
 	class GBuffer;
 	class Light;
 	class Lighting;
 	class Mesh;
 	class Material;
 	class Window;
+
+	using RenderFnc = std::function<void(const mat4&, const mat4&)>;
 
 	class Renderer
 	{
@@ -28,10 +35,11 @@ namespace Leviathan
 
 		shared_ptr<Window> m_window;
 		shared_ptr<Config> m_config;
-		FrameBuffer* m_depthBuffer;
 
-		Lighting* m_lighting;
 		Mesh* m_screenMesh;
+
+		DepthBuffer* m_depthBuffer;
+		Lighting* m_lighting;
 		GBuffer* m_gBuffer;
 
 	private:

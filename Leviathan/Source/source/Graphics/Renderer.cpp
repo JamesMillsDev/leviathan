@@ -6,19 +6,20 @@
 #include <glm/ext/matrix_transform.hpp>
 
 #include "Core/Window.h"
+
+#include "Graphics/DepthBuffer.h"
 #include "Graphics/GBuffer.h"
 #include "Graphics/Lighting.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Cameras/Camera.h"
-#include "Graphics/Textures/FrameBuffer.h"
 #include "Utility/Config.h"
 
 namespace Leviathan
 {
 	Renderer::Renderer(PrivateKey) :
-		m_camera{ nullptr }, m_config{ std::make_shared<Config>("Renderer") }, m_depthBuffer{ nullptr },
-		m_lighting{ nullptr }, m_screenMesh{ nullptr }, m_gBuffer{ nullptr }
+		m_camera{ nullptr }, m_config{ std::make_shared<Config>("Renderer") }, m_screenMesh{ nullptr },
+		m_depthBuffer{ nullptr }, m_lighting{ nullptr }, m_gBuffer{ nullptr }
 	{}
 
 	void Renderer::SetActiveCamera(Camera* camera)
@@ -38,19 +39,13 @@ namespace Leviathan
 
 	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform) const
 	{
+		m_depthBuffer->QueueRender(mesh, transform);
 		m_gBuffer->QueueForRender(material, mesh, transform);
 	}
 
 	void Renderer::Init(const shared_ptr<Window>& window)
 	{
 		m_window = window;
-
-		m_lighting = new Lighting{ m_config };
-
-		m_depthBuffer = new FrameBuffer{
-			m_window->m_width, m_window->m_height, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT,
-			GL_NEAREST, GL_CLAMP_TO_BORDER
-		};
 
 		vec3 up = { 0.f, 0.f, 1.f };
 		TArray uv =
@@ -62,6 +57,8 @@ namespace Leviathan
 		};
 		m_screenMesh = Mesh::MakePlane(&up, &uv);
 
+		m_depthBuffer = new DepthBuffer{ window };
+		m_lighting = new Lighting{ m_config };
 		m_gBuffer = new GBuffer{ window->m_width, window->m_height };
 	}
 
@@ -72,7 +69,8 @@ namespace Leviathan
 		const mat4 projection = m_camera->Projection();
 		const vec3 cameraLoc = view[3];
 
-		// Record to the gBuffer and generate the lighting
+		// Render the frame
+		m_depthBuffer->Render(projection, view);
 		m_gBuffer->Render(projection, view, cameraLoc);
 		m_window->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_lighting->Render(m_screenMesh, m_gBuffer, cameraLoc);
@@ -81,6 +79,7 @@ namespace Leviathan
 	void Renderer::Shutdown() const
 	{
 		delete m_screenMesh;
+		delete m_depthBuffer;
 		delete m_lighting;
 		delete m_gBuffer;
 	}

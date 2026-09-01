@@ -52,7 +52,7 @@ namespace Leviathan
 		}
 
 		m_material->Set(m_material->m_cameraLocationLoc, viewLoc);
-		m_material->SetMaterialProperties(m_shadowMap->Handle(), true);
+		m_material->SetMaterialProperties(m_shadowMap->Handle(), true); 
 		m_material->Set("gBuffer.debugPhase", 3);
 
 		gBuffer->Bind(m_material);

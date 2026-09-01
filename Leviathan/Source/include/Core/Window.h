@@ -40,6 +40,9 @@ namespace Leviathan
 
 		void Clear(uint32 layer) const;
 
+		[[nodiscard]] int32 Width() const;
+		[[nodiscard]] int32 Height() const;
+
 	private:
 		[[nodiscard]] bool Open();
 		void Close() const;

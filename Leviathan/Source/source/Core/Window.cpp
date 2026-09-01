@@ -48,6 +48,16 @@ namespace Leviathan
 		glClear(layer);
 	}
 
+	int32 Window::Width() const
+	{
+		return m_width;
+	}
+
+	int32 Window::Height() const
+	{
+		return m_height;
+	}
+
 	bool Window::Open()
 	{
 		glfwInit();
