@@ -14,10 +14,27 @@ namespace Leviathan
 		m_cameraLocationLoc{ FindUniform("cameraLocation") }, m_lastTextureSlot{ 0 }, m_isLit{ true }
 	{}
 
-	void Material::SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value)
+	const TMap<string, MaterialProperty>& Material::GetMaterialProperties()
+	{
+		return m_properties;
+	}
+
+	const TMap<string, MaterialTextureProperty>& Material::GetMaterialTextureProperties()
+	{
+		return m_textures;
+	}
+
+	void Material::SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value, bool overrideValue)
 	{
 		if (m_properties.ContainsKey(id))
 		{
+			if (overrideValue)
+			{
+				m_properties[id].type = type;
+				m_properties[id].value = value;
+				m_properties[id].loc = FindUniform(id);
+			}
+
 			return;
 		}
 
@@ -31,10 +48,16 @@ namespace Leviathan
 		m_properties.Add(id, property);
 	}
 
-	void Material::SetTexture(const string& id, Texture* texture)
+	void Material::SetTexture(const string& id, Texture* texture, bool overrideValue)
 	{
 		if (m_textures.ContainsKey(id))
 		{
+			if (overrideValue)
+			{
+				m_textures[id].loc = FindUniform(id);
+				m_textures[id].texture = texture;
+			}
+
 			return;
 		}
 
@@ -349,6 +372,19 @@ namespace Leviathan
 			Set("shadows.bias", .005f);
 			Set("shadows.texelSize", .5f);
 			Set("shadows.samples", 2);
+		}
+	}
+
+	void Material::CopyMaterialProperties(Material* material)
+	{
+		for (TMapEntry<string, MaterialProperty>* property : material->m_properties)
+		{
+			SetMaterialProperty(property->Key(), property->Value().type, property->Value().value, true);
+		}
+
+		for (TMapEntry<string, MaterialTextureProperty>* textureProperty : material->m_textures)
+		{
+			SetTexture(textureProperty->Key(), textureProperty->Value().texture, true);
 		}
 	}
 

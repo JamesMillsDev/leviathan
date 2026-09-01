@@ -105,7 +105,7 @@ namespace Leviathan
 
 	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform)
 	{
-		m_gBufferPass->m_renderFncs.push([this, mesh, transform]
+		m_gBufferPass->m_renderFncs.push([this, mesh, material, transform]
 		(const mat4& projection, const mat4& view, const vec3& viewLoc)
 			{
 				Material* mat = m_gBufferPass->passMaterial;
@@ -115,11 +115,15 @@ namespace Leviathan
 					return;
 				}
 
+				mat->CopyMaterialProperties(material);
+				
 				mat->Set(mat->m_vpLoc, projection * view);
 				mat->Set(mat->m_cameraLocationLoc, viewLoc);
 
 				mat->Set(mat->m_modelLoc, transform);
 				mat->Set(mat->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
+
+				mat->SetMaterialProperties(0, false);
 
 				mesh->Render();
 			});
@@ -127,7 +131,7 @@ namespace Leviathan
 		for (RenderPass* pass : m_renderPasses)
 		{
 			pass->m_renderFncs.push([this, material, pass]
-			(const mat4& projection, const mat4& view, const vec3& viewLoc)
+			(const mat4&, const mat4&, const vec3& viewLoc)
 				{
 					if (!material->Bind())
 					{
@@ -153,8 +157,6 @@ namespace Leviathan
 						}
 					}*/
 
-					mat4 overrideProjection = projection;
-					mat4 overrideView = view;
 					vec3 overrideViewLoc = viewLoc;
 
 					/*if (pass->m_lightMatrixGetter != nullptr && pass->IsFeatureEnabled(EPassFeature::WritesShadowMap))
@@ -163,16 +165,14 @@ namespace Leviathan
 						overrideViewLoc = m_lights[0]->transform[3];
 					}*/
 
-					//material->Set(material->m_vpLoc, overrideProjection * overrideView);
 					material->Set(material->m_cameraLocationLoc, overrideViewLoc);
 
-					//material->Set(material->m_modelLoc, transform);
 					//material->Set(material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
 
 					material->SetMaterialProperties(m_shadowMap->Handle(), pass->IsFeatureEnabled(EPassFeature::ShadowMapping));
 
 					m_gBuffer->Bind(material);
-					material->Set("gBuffer.debugPhase", 2);
+					material->Set("gBuffer.debugPhase", 3);
 
 					m_screenMesh->Render();
 				});
@@ -214,11 +214,11 @@ namespace Leviathan
 
 		m_gBuffer = new GBuffer{ window->m_width, window->m_height };
 
-		/*RenderPass* fullDepthPass = new RenderPass;
+		RenderPass* fullDepthPass = new RenderPass;
 		fullDepthPass->frameBuffer = m_depthBuffer;
 		fullDepthPass->clearMask = GL_DEPTH_BUFFER_BIT;
 
-		RenderPass* shadowPass = new RenderPass;
+		/*RenderPass* shadowPass = new RenderPass;
 		shadowPass->frameBuffer = m_shadowMap;
 		shadowPass->EnablePassFeature(EPassFeature::OverrideCameraMatrices | EPassFeature::WritesShadowMap);
 		shadowPass->SetLightMatrixGetter([this](const Light* light, mat4& projection, mat4& view)
@@ -228,6 +228,7 @@ namespace Leviathan
 			});*/
 
 		RenderPass* mainRenderPass = new RenderPass;
+		m_renderPasses.Add(fullDepthPass);
 		m_renderPasses.Add(mainRenderPass);
 	}
 
@@ -310,7 +311,6 @@ namespace Leviathan
 		delete m_screenMesh;
 		delete m_gBuffer;
 
-		delete m_depthBuffer;
 		delete m_shadowMap;
 	}
 }

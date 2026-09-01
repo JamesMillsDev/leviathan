@@ -82,8 +82,11 @@ namespace Leviathan
 		explicit Material(Shader* shader);
 
 	public:
-		void SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value);
-		void SetTexture(const string& id, Texture* texture);
+		const TMap<string, MaterialProperty>& GetMaterialProperties();
+		const TMap<string, MaterialTextureProperty>& GetMaterialTextureProperties();
+
+		void SetMaterialProperty(const string& id, EMaterialPropertyType type, MaterialPropertyUnion value, bool overrideValue = false);
+		void SetTexture(const string& id, Texture* texture, bool overrideValue = false);
 
 		void SetLitState(bool isLit);
 
@@ -123,6 +126,7 @@ namespace Leviathan
 		
 	private:
 		void SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping);
+		void CopyMaterialProperties(Material* material);
 		bool Bind() const;
 
 		int32 FindUniform(const string& name) const;
