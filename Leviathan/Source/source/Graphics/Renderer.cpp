@@ -108,17 +108,18 @@ namespace Leviathan
 		m_gBufferPass->m_renderFncs.push([this, mesh, transform]
 		(const mat4& projection, const mat4& view, const vec3& viewLoc)
 			{
-				Material* gPassMat = m_gBufferPass->passMaterial;
+				Material* mat = m_gBufferPass->passMaterial;
 
-				if (!gPassMat->Bind())
+				if (!mat->Bind())
 				{
 					return;
 				}
 
-				gPassMat->Set(gPassMat->m_vpLoc, projection * view);
-				gPassMat->Set(gPassMat->m_cameraLocationLoc, viewLoc);
+				mat->Set(mat->m_vpLoc, projection * view);
+				mat->Set(mat->m_cameraLocationLoc, viewLoc);
 
-				gPassMat->Set(gPassMat->m_modelLoc, transform);
+				mat->Set(mat->m_modelLoc, transform);
+				mat->Set(mat->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(transform))));
 
 				mesh->Render();
 			});
@@ -170,8 +171,8 @@ namespace Leviathan
 
 					material->SetMaterialProperties(m_shadowMap->Handle(), pass->IsFeatureEnabled(EPassFeature::ShadowMapping));
 
-					m_gBuffer->Bind(m_gBufferPass->passMaterial);
-					material->Set("gBuffer.debugPhase", 1);
+					m_gBuffer->Bind(material);
+					material->Set("gBuffer.debugPhase", 2);
 
 					m_screenMesh->Render();
 				});
@@ -197,7 +198,15 @@ namespace Leviathan
 			GL_NEAREST, GL_CLAMP_TO_BORDER
 		};
 
-		m_screenMesh = Mesh::MakePlane();
+		vec3 up = { 0.f, 0.f, 1.f };
+		TArray uv = 
+		{
+			vec2{ 1.f, 0.f },
+			vec2{ 0.f, 0.f },
+			vec2{ 0.f, 1.f },
+			vec2{ 1.f, 1.f },
+		};
+		m_screenMesh = Mesh::MakePlane(&up, &uv);
 
 		m_gBufferPass = new RenderPass;
 		m_gBufferPass->passShader = new Shader{ "Shaders/gbuffer" };

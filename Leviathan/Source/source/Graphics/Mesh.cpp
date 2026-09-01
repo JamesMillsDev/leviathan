@@ -292,17 +292,23 @@ namespace Leviathan
 		return mesh;
 	}
 
-	Mesh* Mesh::MakePlane()
+	Mesh* Mesh::MakePlane(vec3* normal, TArray<vec2, 4>* uvs)
 	{
+		const vec3 up = glm::normalize(normal == nullptr ? vec3{ 0.f, 1.f, 0.f } : *normal);
+		const vec3 helper = std::abs(up.y) > .99f ? vec3{ 1.f, 0.f, 0.f } : vec3{ 0.f, 1.f, 0.f };
+
+		const vec3 right = glm::normalize(glm::cross(helper, up));
+		const vec3 forward = glm::normalize(glm::cross(up, right));
+
 		TArray points =
 		{
-			vec4{ -1.f, 0.f, 1.f, 1.f },
-			vec4{ -1.f, 0.f, -1.f, 1.f },
-			vec4{ 1.f, 0.f, -1.f, 1.f },
-			vec4{ 1.f, 0.f, 1.f, 1.f },
+			vec4{ -forward + right, 1.f },
+			vec4{ -forward - right, 1.f },
+			vec4{ forward - right, 1.f },
+			vec4{ forward + right, 1.f },
 		};
 
-		TArray uvs =
+		TArray uv = uvs != nullptr ? *uvs : TArray
 		{
 			vec2{ 0.f, 1.f },
 			vec2{ 0.f, 0.f },
@@ -312,12 +318,12 @@ namespace Leviathan
 
 		TArray<vec4, 2> tangents;
 
-		constexpr vec4 norm = { 0.f, 1.f, 0.f, 0.f };
+		const vec4 norm = vec4{ up, 0.f };
 		vec4 edge1 = points[1] - points[0];
 		vec4 edge2 = points[2] - points[0];
 
-		vec2 deltaUv1 = uvs[1] - uvs[0];
-		vec2 deltaUv2 = uvs[2] - uvs[0];
+		vec2 deltaUv1 = uv[1] - uv[0];
+		vec2 deltaUv2 = uv[2] - uv[0];
 
 		float f = 1.f / (deltaUv1.x * deltaUv2.y - deltaUv2.x * deltaUv1.y);
 
@@ -332,8 +338,8 @@ namespace Leviathan
 		edge1 = points[2] - points[0];
 		edge2 = points[3] - points[0];
 
-		deltaUv1 = uvs[2] - uvs[0];
-		deltaUv2 = uvs[3] - uvs[0];
+		deltaUv1 = uv[2] - uv[0];
+		deltaUv2 = uv[3] - uv[0];
 
 		f = 1.f / (deltaUv1.x * deltaUv2.y - deltaUv2.x * deltaUv1.y);
 
@@ -347,12 +353,12 @@ namespace Leviathan
 
 		TList vertices =
 		{
-			Vertex{.location = points[2], .normal = norm, .tangent = tangents[0], .uvs = { uvs[2] }, .color = Color::WHITE },
-			Vertex{.location = points[1], .normal = norm, .tangent = tangents[0], .uvs = { uvs[1] }, .color = Color::WHITE },
-			Vertex{.location = points[0], .normal = norm, .tangent = tangents[0], .uvs = { uvs[0] }, .color = Color::WHITE },
-			Vertex{.location = points[3], .normal = norm, .tangent = tangents[1], .uvs = { uvs[3] }, .color = Color::WHITE },
-			Vertex{.location = points[2], .normal = norm, .tangent = tangents[1], .uvs = { uvs[2] }, .color = Color::WHITE },
-			Vertex{.location = points[0], .normal = norm, .tangent = tangents[1], .uvs = { uvs[0] }, .color = Color::WHITE },
+			Vertex{.location = points[2], .normal = norm, .tangent = tangents[0], .uvs = { uv[2] }, .color = Color::WHITE },
+			Vertex{.location = points[1], .normal = norm, .tangent = tangents[0], .uvs = { uv[1] }, .color = Color::WHITE },
+			Vertex{.location = points[0], .normal = norm, .tangent = tangents[0], .uvs = { uv[0] }, .color = Color::WHITE },
+			Vertex{.location = points[3], .normal = norm, .tangent = tangents[1], .uvs = { uv[3] }, .color = Color::WHITE },
+			Vertex{.location = points[2], .normal = norm, .tangent = tangents[1], .uvs = { uv[2] }, .color = Color::WHITE },
+			Vertex{.location = points[0], .normal = norm, .tangent = tangents[1], .uvs = { uv[0] }, .color = Color::WHITE },
 		};
 
 		TList<SubMesh*> subMeshes;

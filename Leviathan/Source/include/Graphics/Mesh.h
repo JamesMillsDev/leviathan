@@ -9,6 +9,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "Utility/Collections/TArray.h"
+
 using glm::vec2;
 using glm::vec3;
 using glm::vec4;
@@ -59,7 +61,7 @@ namespace Leviathan
 	public:
 		static Mesh* MakeFromAssimp(const string& path);
 		static Mesh* MakeCube();
-		static Mesh* MakePlane();
+		static Mesh* MakePlane(vec3* normal = nullptr, TArray<vec2, 4>* uvs = nullptr);
 
 	private:
 		TList<SubMesh*> m_submeshes;

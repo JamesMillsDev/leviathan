@@ -77,14 +77,15 @@ namespace Leviathan
 		m_bound = false;
 	}
 
-	void GBuffer::Bind(Material* gBufferShader)
+	void GBuffer::Bind(Material* material)
 	{
 		int index = 0;
 		for (TMapEntry<string, uint32>* handle : m_bufferHandles)
 		{
-			glActiveTexture(GL_TEXTURE0 + index++);
+			glActiveTexture(GL_TEXTURE0 + index);
 			glBindTexture(GL_TEXTURE_2D, handle->Value());
-			gBufferShader->Set(handle->Key(), static_cast<int32>(handle->Value()));
+			material->Set(handle->Key(), index);
+			++index;
 		}
 	}
 }

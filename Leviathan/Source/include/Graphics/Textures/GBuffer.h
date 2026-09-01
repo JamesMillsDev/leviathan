@@ -32,7 +32,7 @@ namespace Leviathan
 		void BeginRecording();
 		void FinishRecording();
 
-		void Bind(Material* gBufferShader);
+		void Bind(Material* material);
 
 	};
 }
