@@ -63,6 +63,8 @@ namespace Leviathan
 
 	class Material
 	{
+		friend class GBuffer;
+		friend class Lighting;
 		friend class Renderer;
 
 	private:

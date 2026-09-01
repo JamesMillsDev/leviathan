@@ -30,6 +30,8 @@ namespace Leviathan
 
 	class Mesh
 	{
+		friend class GBuffer;
+		friend class Lighting;
 		friend class Renderer;
 
 	public:
