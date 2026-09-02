@@ -311,7 +311,7 @@ namespace Leviathan
 		glUniformMatrix4fv(id, count, GL_FALSE, glm::value_ptr(value[0]));
 	}
 
-	void Material::SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping)
+	void Material::SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping, int32 maxIndex)
 	{
 		for (TMapEntry<string, MaterialProperty>* property : m_properties)
 		{

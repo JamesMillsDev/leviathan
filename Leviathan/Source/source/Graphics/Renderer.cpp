@@ -12,14 +12,16 @@
 #include "Graphics/Lighting.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Shadows.h"
 #include "Graphics/Cameras/Camera.h"
+#include "Graphics/Textures/FrameBuffer.h"
 #include "Utility/Config.h"
 
 namespace Leviathan
 {
 	Renderer::Renderer(PrivateKey) :
 		m_camera{ nullptr }, m_config{ std::make_shared<Config>("Renderer") }, m_screenMesh{ nullptr },
-		m_depthBuffer{ nullptr }, m_lighting{ nullptr }, m_gBuffer{ nullptr }
+		m_depthBuffer{ nullptr }, m_lighting{ nullptr }, m_gBuffer{ nullptr }, m_shadows{ nullptr }
 	{}
 
 	void Renderer::SetActiveCamera(Camera* camera)
@@ -40,7 +42,8 @@ namespace Leviathan
 	void Renderer::Render(Material* material, Mesh* mesh, const mat4& transform) const
 	{
 		m_depthBuffer->QueueRender(mesh, transform);
-		m_gBuffer->QueueForRender(material, mesh, transform);
+		m_gBuffer->QueueRender(material, mesh, transform);
+		m_shadows->QueueRender(mesh, transform);
 	}
 
 	void Renderer::Init(const shared_ptr<Window>& window)
@@ -59,7 +62,8 @@ namespace Leviathan
 
 		m_depthBuffer = new DepthBuffer{ window };
 		m_lighting = new Lighting{ m_config };
-		m_gBuffer = new GBuffer{ window }; 
+		m_gBuffer = new GBuffer{ window };
+		m_shadows = new Shadows{ window, m_config };
 	}
 
 	void Renderer::Render() const
@@ -71,14 +75,16 @@ namespace Leviathan
 
 		// Render the frame
 		m_depthBuffer->Render(projection, view);
+		m_shadows->Render(m_lighting->m_lights);
 		m_gBuffer->Render(projection, view, cameraLoc);
 		m_window->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		m_lighting->Render(m_screenMesh, m_gBuffer, cameraLoc);
+		m_lighting->Render(m_screenMesh, m_gBuffer, cameraLoc, m_shadows->m_shadowMap->Handle());
 	}
 
 	void Renderer::Shutdown() const
 	{
 		delete m_screenMesh;
+		delete m_shadows;
 		delete m_depthBuffer;
 		delete m_lighting;
 		delete m_gBuffer;

@@ -14,6 +14,7 @@ using glm::vec3;
 
 namespace Leviathan
 {
+	class Shadows;
 	class Camera;
 	class Config;
 	class DepthBuffer;
@@ -41,6 +42,7 @@ namespace Leviathan
 		DepthBuffer* m_depthBuffer;
 		Lighting* m_lighting;
 		GBuffer* m_gBuffer;
+		Shadows* m_shadows;
 
 	private:
 		struct PrivateKey

@@ -67,6 +67,7 @@ namespace Leviathan
 		friend class GBuffer;
 		friend class Lighting;
 		friend class Renderer;
+		friend class Shadows;
 
 	private:
 		Shader* m_shader;
@@ -128,7 +129,7 @@ namespace Leviathan
 		void Set(int32 id, mat4* value, int32 count);
 		
 	private:
-		void SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping);
+		void SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping, int32 maxIndex);
 		void CopyMaterialProperties(Material* material);
 		bool Bind() const;
 

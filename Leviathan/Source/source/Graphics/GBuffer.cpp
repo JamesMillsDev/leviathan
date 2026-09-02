@@ -161,7 +161,7 @@ namespace Leviathan
 		FinishRecording();
 	}
 
-	void GBuffer::QueueForRender(Material* material, Mesh* mesh, const mat4& transform)
+	void GBuffer::QueueRender(Material* material, Mesh* mesh, const mat4& transform)
 	{
 		m_render.push(GBufferRender
 			{
@@ -183,7 +183,7 @@ namespace Leviathan
 					m_material->Set(m_material->m_modelLoc, render.transform);
 					m_material->Set(m_material->m_normalMatrixLoc, mat3(glm::transpose(glm::inverse(render.transform))));
 
-					m_material->SetMaterialProperties(0, false);
+					m_material->SetMaterialProperties(0, false, 0);
 
 					render.mesh->Render();
 				}
@@ -193,7 +193,7 @@ namespace Leviathan
 
 	void GBuffer::Bind(Material* material)
 	{
-		int index = 0;
+		int32 index = 1;
 		for (TMapEntry<string, GBufferHandle>* handle : m_bufferHandles)
 		{
 			if (!handle->Value().render)

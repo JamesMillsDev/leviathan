@@ -3,6 +3,8 @@
 #include <memory>
 #include <glm/vec3.hpp>
 
+#include "Cameras/Camera.h"
+#include "Cameras/Camera.h"
 #include "Utility/Collections/TList.h"
 
 using std::shared_ptr;
@@ -30,14 +32,12 @@ namespace Leviathan
 		Shader* m_shader;
 		Material* m_material;
 
-		FrameBuffer* m_shadowMap;
-
 	private:
 		explicit Lighting(const shared_ptr<Config>& config);
 		~Lighting();
 
 	private:
-		void Render(Mesh* screenQuad, GBuffer* gBuffer, const vec3& viewLoc);
+		void Render(Mesh* screenQuad, GBuffer* gBuffer, const vec3& viewLoc, uint32 shadowMapHandle);
 
 	};
 }

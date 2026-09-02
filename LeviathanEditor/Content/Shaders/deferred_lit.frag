@@ -110,7 +110,7 @@ void main()
 
 		// Calculate shadow for this specific light
 		float bias = max(0.05 * (1.0 - dot(normal, lightDir)), shadows.bias);
-		float shadow = 0.0;
+		float shadow = ShadowCalculation(worldLocationsLightSpace[i], bias);
 
 		float diff = max(dot(normal, lightDir), 0.0);
 		vec3 diffuse = lights[i].color * baseColor.rgb * diff;

@@ -69,7 +69,7 @@ namespace Leviathan
 		void FinishRecording();
 
 		void Render(const mat4& projection, const mat4& view, const vec3& viewLoc);
-		void QueueForRender(Material* material, Mesh* mesh, const mat4& transform);
+		void QueueRender(Material* material, Mesh* mesh, const mat4& transform);
 
 		void Bind(Material* material);
 		[[nodiscard]] uint32 Handle() const;

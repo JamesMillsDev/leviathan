@@ -4,13 +4,10 @@
 
 #include <glm/ext/matrix_clip_space.hpp>
 
-#include "glad/gl.h"
-
 #include "Graphics/GBuffer.h"
 #include "Graphics/Light.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
-#include "Graphics/Textures/FrameBuffer.h"
 
 #include "Utility/Config.h"
 
@@ -22,20 +19,15 @@ namespace Leviathan
 		: m_shader{ new Shader{ "Shaders/deferred_lit" } }
 	{
 		m_material = new Material{ m_shader };
-		m_shadowMap = new FrameBuffer{
-			config->Get<int32>("Shadows.Map.Width"), config->Get<int32>("Shadows.Map.Height"),
-			GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT, GL_NEAREST, GL_CLAMP_TO_BORDER
-		};
 	}
 
 	Lighting::~Lighting()
 	{
-		delete m_shadowMap;
 		delete m_material;
 		delete m_shader;
 	}
 
-	void Lighting::Render(Mesh* screenQuad, GBuffer* gBuffer, const vec3& viewLoc)
+	void Lighting::Render(Mesh* screenQuad, GBuffer* gBuffer, const vec3& viewLoc, const uint32 shadowMapHandle)
 	{
 		if (!m_material->Bind())
 		{
@@ -54,10 +46,9 @@ namespace Leviathan
 		} 
 
 		m_material->Set(m_material->m_cameraLocationLoc, viewLoc);
-		m_material->SetMaterialProperties(m_shadowMap->Handle(), true); 
-		m_material->Set("gBuffer.debugPhase", debugMode);
-
+		m_material->SetMaterialProperties(shadowMapHandle, true, 0);
 		gBuffer->Bind(m_material);
+		m_material->Set("gBuffer.debugPhase", debugMode);
 
 		screenQuad->Render();
 	}

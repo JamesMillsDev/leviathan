@@ -34,6 +34,7 @@ namespace Leviathan
 		friend class GBuffer;
 		friend class Lighting;
 		friend class Renderer;
+		friend class Shadows;
 
 	public:
 		class SubMesh
