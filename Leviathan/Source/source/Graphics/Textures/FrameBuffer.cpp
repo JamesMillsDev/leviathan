@@ -49,6 +49,37 @@ namespace Leviathan
 		glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
 	}
 
+	void FrameBuffer::Resize(const int32 w, const int32 h)
+	{
+		m_width = w;
+		m_height = h;
+
+		glDeleteTextures(1, &m_textureHandle);
+		glDeleteFramebuffers(1, &m_handle);
+
+		glGenFramebuffers(1, &m_handle);
+
+		glGenTextures(1, &m_textureHandle);
+		glBindTexture(GL_TEXTURE_2D, m_textureHandle);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, m_component, m_width, m_height, 0, m_component, m_format, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_filter);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_wrap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_wrap);
+
+		float borderColor[] = { 1.f, 1.f, 1.f, 1.f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+		Bind();
+		glFramebufferTexture2D(GL_FRAMEBUFFER, m_attachment, GL_TEXTURE_2D, m_textureHandle, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		Unbind();
+	}
+
 	void FrameBuffer::Unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);

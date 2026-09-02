@@ -36,7 +36,6 @@ void main()
 	vs_out.tbn = transpose(mat3(T, B, N));
 	vs_out.lightCount = lightCount;
 
-	// FIX: Loop through MAX_LIGHT_COUNT to ensure the entire array is initialized
 	for(int i = 0; i < MAX_LIGHT_COUNT; ++i)
 	{
 		vs_out.worldLocationsLightSpace[i] = lightSpaceMatrices[i] * vec4(vs_out.worldLocation, 1.0);

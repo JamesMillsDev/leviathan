@@ -1,5 +1,13 @@
 #version 460 
 
+const int MAX_LIGHT_COUNT = 16;
+
+in VS_OUT
+{
+	vec2 uv0;
+	flat int lightCount;
+} fs_in;
+
 struct GBuffer
 {
     sampler2D location;
@@ -10,49 +18,112 @@ struct GBuffer
     int debugPhase; 
 };
 
-uniform GBuffer gBuffer;
+struct Light
+{
+	int type;
+	vec3 direction;
+	vec3 location;
+	vec3 color;
+};
 
-in vec2 fragUv0;
+struct Shadows
+{
+	sampler2D map;
+	float bias;
+	float texelSize;
+	int samples;
+};
+
+uniform mat4 lightSpaceMatrices[MAX_LIGHT_COUNT];
+uniform Light lights[MAX_LIGHT_COUNT];
+uniform Shadows shadows;
+uniform GBuffer gBuffer;
+uniform vec3 cameraLocation;
+
+vec4 worldLocationsLightSpace[MAX_LIGHT_COUNT];
 
 out vec4 fragColor;
 
+float ShadowCalculation(vec4 fragPosLightSpace, float bias)
+{
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+
+	float closestDepth = texture(shadows.map, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+
+	float shadow = 0.0;
+	if(projCoords.z <= 1.0)
+	{
+		float iterationCount = 0.0;
+		vec2 texelSize = shadows.texelSize / textureSize(shadows.map, 0);
+		for(int x = -shadows.samples; x <= shadows.samples; ++x)
+		{
+			for(int y = -shadows.samples; y <= shadows.samples; ++y)
+			{
+				iterationCount += 1.0;
+				float pcfDepth = texture(shadows.map, projCoords.xy + vec2(x, y) * texelSize).r;
+				shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+			}
+		}
+
+		shadow /= iterationCount;
+	}
+
+	return shadow;
+}
+
+void ComputeWorldSpaceLightLocations()
+{
+    vec3 location = textureLod(gBuffer.location, fs_in.uv0, 0.0).rgb;
+
+	for(int i = 0; i < MAX_LIGHT_COUNT; ++i)
+	{
+		worldLocationsLightSpace[i] = lightSpaceMatrices[i] * vec4(location, 1.0);
+	}
+}
+
 void main()
 {
-    if(gBuffer.debugPhase == 1)
-    {
-        fragColor = vec4(texture(gBuffer.location, fragUv0).rgb, 1.0);
-        return;
-    }
+    if(gBuffer.debugPhase == 1) { fragColor = vec4(texture(gBuffer.location, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 2) { fragColor = vec4(texture(gBuffer.normal, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 3) { fragColor = vec4(texture(gBuffer.tangent, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 4) { fragColor = vec4(texture(gBuffer.biTangent, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 5) { fragColor = vec4(texture(gBuffer.albedoSpec, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 6) { fragColor = vec4(texture(gBuffer.albedoSpec, fs_in.uv0).a, 1.0, 1.0, 1.0); return; }
 
-    if(gBuffer.debugPhase == 2)
-    {
-        fragColor = vec4(texture(gBuffer.normal, fragUv0).rgb, 1.0);
-        return;
-    }
+    ComputeWorldSpaceLightLocations();
 
-    if(gBuffer.debugPhase == 3)
-    {
-        fragColor = vec4(texture(gBuffer.tangent, fragUv0).rgb, 1.0);
-        return;
-    }
+    vec3 location = texture(gBuffer.location, fs_in.uv0).rgb;
+    vec3 normal = normalize(texture(gBuffer.normal, fs_in.uv0).rgb);
+    vec4 baseColor = texture(gBuffer.albedoSpec, fs_in.uv0);
 
-    if(gBuffer.debugPhase == 4)
-    {
-        fragColor = vec4(texture(gBuffer.biTangent, fragUv0).rgb, 1.0);
-        return;
-    }
+    vec3 ambient = vec3(0.1) * baseColor.rgb;
+    vec3 totalDiffuseSpecular = vec3(0.0);
+    vec3 viewDir = normalize(cameraLocation - location);
 
-    if(gBuffer.debugPhase == 5)
-    {
-        fragColor = vec4(texture(gBuffer.albedoSpec, fragUv0).rgb, 1.0);
-        return;
-    }
+	// Loop strictly up to the active light count
+	for(int i = 0; i < fs_in.lightCount; ++i)
+	{
+		// Since they are directional lights, light location acts as the target position vector
+		vec3 lightDir = normalize(-lights[i].direction);
+		vec3 halfwayDir = normalize(lightDir + viewDir);
 
-    if(gBuffer.debugPhase == 6)
-    {
-        fragColor = vec4(texture(gBuffer.albedoSpec, fragUv0).a, 1.0, 1.0, 1.0);
-        return;
-    }
+		// Calculate shadow for this specific light
+		float bias = max(0.05 * (1.0 - dot(normal, lightDir)), shadows.bias);
+		float shadow = 0.0;
 
-    fragColor = vec4(1.0);
+		float diff = max(dot(normal, lightDir), 0.0);
+		vec3 diffuse = lights[i].color * baseColor.rgb * diff;
+
+		float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+		spec *= step(0.0, dot(normal, lightDir));   // gate specular on the same test as diffuse
+		vec3 specular = lights[i].color * baseColor.a * spec;
+
+		// Accumulate light calculations independently
+		totalDiffuseSpecular += (1.0 - shadow) * (diffuse + specular);
+	}
+
+	vec3 result = ambient + totalDiffuseSpecular;
+	fragColor = vec4(result, 1.0);
 }

@@ -20,6 +20,11 @@ namespace Leviathan
 			m_window->Width(), m_window->Height(), GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT, GL_FLOAT,
 			GL_NEAREST, GL_CLAMP_TO_BORDER
 		};
+
+		window->onWindowResized.Add([this](int32 w, int32 h)
+			{
+				m_frameBuffer->Resize(w, h);
+			});
 	}
 
 	DepthBuffer::~DepthBuffer()

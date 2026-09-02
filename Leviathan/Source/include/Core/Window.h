@@ -1,12 +1,16 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include <Maths/Color.h>
 
+#include "Utility/Collections/TList.h"
+
 struct GLFWwindow;
 
 using std::weak_ptr;
+using WindowResizeCallback = std::function<void(int32, int32)>;
 
 extern void FramebufferSizeCallback(GLFWwindow*, int32 width, int32 height);
 
@@ -24,6 +28,9 @@ namespace Leviathan
 		struct PrivateKey
 		{
 		};
+
+	public:
+		TList<WindowResizeCallback> onWindowResized;
 
 	private:
 		GLFWwindow* m_window;

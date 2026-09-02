@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <queue>
 #include <string>
 #include <glm/mat4x4.hpp>
@@ -10,6 +11,7 @@
 #include "Utility/Collections/TMap.h"
 
 using std::queue;
+using std::shared_ptr;
 using std::string;
 
 using glm::mat4;
@@ -22,6 +24,7 @@ namespace Leviathan
 	class Material;
 	class Mesh;
 	class Shader;
+	class Window;
 
 	struct GBufferRender
 	{
@@ -37,20 +40,28 @@ namespace Leviathan
 		friend class Renderer;
 
 	private:
-		static uint32 GenerateTextureBuffer(int32 w, int32 h, int32 format, uint32 type, TList<uint32>& attachments);
+		struct GBufferHandle
+		{
+			uint32 handle;
+			bool render = true;
+		};
+
+	private:
+		static GBufferHandle GenerateTextureBuffer(int32 w, int32 h, int32 format, uint32 type, TList<uint32>& attachments);
+		static GBufferHandle GenerateDepthAttachment(int32 w, int32 h);
 
 	private:
 		uint32 m_handle;
 		bool m_bound;
 
-		TMap<string, uint32> m_bufferHandles;
+		TMap<string, GBufferHandle> m_bufferHandles;
 		queue<GBufferRender> m_render;
 
 		Material* m_material;
 		Shader* m_shader;
 
 	private:
-		GBuffer(int32 w, int32 h);
+		explicit GBuffer(const shared_ptr<Window>& window);
 		~GBuffer();
 
 	private:

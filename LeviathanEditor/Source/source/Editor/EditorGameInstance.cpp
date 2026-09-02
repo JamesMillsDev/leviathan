@@ -13,6 +13,7 @@
 #include "Core/Input.h"
 
 #include "Graphics/Light.h"
+#include "Graphics/Lighting.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
@@ -142,7 +143,7 @@ namespace Leviathan
 				m_light = new Light;
 				//m_light->transform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
 				m_light->transform = glm::lookAt(vec3{ 1.2f, 1.f, 2.f }, vec3{ 0.f, -.02f, 0.f }, vec3{ 0.f, 1.f, 0.f });
-				m_light->transform = glm::inverse(m_light->transform);
+				//m_light->transform = glm::inverse(m_light->transform);
 				m_renderer->AddLight(m_light);
 			},
 			[this]
@@ -177,6 +178,41 @@ namespace Leviathan
 		else
 		{
 			m_orbitCamera->Rotate({ 2.f, 0.f });
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key0))
+		{
+			debugMode = 0;
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key1))
+		{
+			debugMode = 1;
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key2))
+		{
+			debugMode = 2;
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key3))
+		{
+			debugMode = 3;
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key4))
+		{
+			debugMode = 4;
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key5))
+		{
+			debugMode = 5;
+		}
+
+		if (input->IsKeyDown(EInputCodes::Key6))
+		{
+			debugMode = 6;
 		}
 	}
 

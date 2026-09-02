@@ -14,6 +14,11 @@ void FramebufferSizeCallback(GLFWwindow* _, const int32 width, const int32 heigh
 	{
 		win->m_width = width;
 		win->m_height = height;
+
+		for (const WindowResizeCallback& cb : win->onWindowResized)
+		{
+			cb(win->m_width, win->m_height);
+		}
 	}
 
 	glViewport(0, 0, width, height);

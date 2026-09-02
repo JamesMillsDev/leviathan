@@ -8,6 +8,8 @@
 using std::shared_ptr;
 using glm::vec3;
 
+extern int debugMode;
+
 namespace Leviathan
 {
 	class Config;

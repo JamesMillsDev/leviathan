@@ -25,6 +25,7 @@ namespace Leviathan
 
 	public:
 		void Bind() const;
+		void Resize(int32 w, int32 h);
 
 		void Unbind();
 
@@ -32,6 +33,5 @@ namespace Leviathan
 		[[nodiscard]] uint32 TextureHandle() const;
 		[[nodiscard]] int32 Width() const;
 		[[nodiscard]] int32 Height() const;
-
 	};
 }

@@ -59,7 +59,7 @@ namespace Leviathan
 
 		m_depthBuffer = new DepthBuffer{ window };
 		m_lighting = new Lighting{ m_config };
-		m_gBuffer = new GBuffer{ window->m_width, window->m_height };
+		m_gBuffer = new GBuffer{ window }; 
 	}
 
 	void Renderer::Render() const

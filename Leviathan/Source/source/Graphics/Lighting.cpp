@@ -14,6 +14,8 @@
 
 #include "Utility/Config.h"
 
+int debugMode = 0;
+
 namespace Leviathan
 {
 	Lighting::Lighting(const shared_ptr<Config>& config)
@@ -49,11 +51,11 @@ namespace Leviathan
 
 			mat4 lightView = glm::inverse(m_lights[i]->transform);
 			m_material->Set(std::format("lightSpaceMatrices[{}]", i), lightProjection * lightView);
-		}
+		} 
 
 		m_material->Set(m_material->m_cameraLocationLoc, viewLoc);
 		m_material->SetMaterialProperties(m_shadowMap->Handle(), true); 
-		m_material->Set("gBuffer.debugPhase", 3);
+		m_material->Set("gBuffer.debugPhase", debugMode);
 
 		gBuffer->Bind(m_material);
 

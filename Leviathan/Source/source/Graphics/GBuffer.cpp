@@ -2,12 +2,13 @@
 
 #include <glad/gl.h>
 
+#include "Core/Window.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 
 namespace Leviathan
 {
-	uint32 GBuffer::GenerateTextureBuffer(const int32 w, const int32 h, const int32 format, const uint32 type, TList<uint32>& attachments)
+	GBuffer::GBufferHandle GBuffer::GenerateTextureBuffer(const int32 w, const int32 h, const int32 format, const uint32 type, TList<uint32>& attachments)
 	{
 		uint32 handle;
 
@@ -20,10 +21,27 @@ namespace Leviathan
 
 		attachments.Add(GL_COLOR_ATTACHMENT0 + static_cast<uint32>(attachments.Count()));
 
-		return handle;
+		return { .handle = handle };
 	}
 
-	GBuffer::GBuffer(const int32 w, const int32 h) :
+	GBuffer::GBufferHandle GBuffer::GenerateDepthAttachment(int32 w, int32 h)
+	{
+		uint32 handle;
+
+		glGenTextures(1, &handle);
+		glBindTexture(GL_TEXTURE_2D, handle);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, w, h, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, handle, 0);
+
+		return {.handle = handle, .render = false };
+	}
+
+	GBuffer::GBuffer(const shared_ptr<Window>& window) :
 		m_bound{ false }, m_shader{ new Shader{ "Shaders/gbuffer" } }
 	{
 		m_material = new Material{ m_shader };
@@ -32,8 +50,12 @@ namespace Leviathan
 		glGenFramebuffers(1, &m_handle);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
 
+		const int32 w = window->Width(), h = window->Height();
+
 		// Build out the gBuffer elements
 		TList<uint32> attachments;
+		// Depth
+		m_bufferHandles.Add("gBuffer.depth", GenerateDepthAttachment(w, h));
 		// Position
 		m_bufferHandles.Add("gBuffer.location", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
 		// Normal
@@ -48,6 +70,41 @@ namespace Leviathan
 		// Assign the frame buffers and clear
 		glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		window->onWindowResized.Add([this](int32 w, int32 h)
+			{
+				for (TMapEntry<string, GBufferHandle>* handle : m_bufferHandles)
+				{
+					uint32 texHandle = handle->Value().handle;
+					glDeleteTextures(1, &texHandle);
+				}
+				m_bufferHandles.Clear();
+
+				glDeleteFramebuffers(1, &m_handle);
+
+				// Generate the handle
+				glGenFramebuffers(1, &m_handle);
+				glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
+
+				// Build out the gBuffer elements
+				TList<uint32> attachments;
+				// Depth
+				m_bufferHandles.Add("gBuffer.depth", GenerateDepthAttachment(w, h));
+				// Position
+				m_bufferHandles.Add("gBuffer.location", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+				// Normal
+				m_bufferHandles.Add("gBuffer.normal", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+				// Tangent
+				m_bufferHandles.Add("gBuffer.tangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+				// Bitangent
+				m_bufferHandles.Add("gBuffer.biTangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+				// Albedo + Specular
+				m_bufferHandles.Add("gBuffer.albedoSpec", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+
+				// Assign the frame buffers and clear
+				glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			});
 	}
 
 	GBuffer::~GBuffer()
@@ -55,9 +112,9 @@ namespace Leviathan
 		delete m_material;
 		delete m_shader;
 
-		for (TMapEntry<string, uint32>* handle : m_bufferHandles)
+		for (TMapEntry<string, GBufferHandle>* handle : m_bufferHandles)
 		{
-			uint32 texHandle = handle->Value();
+			uint32 texHandle = handle->Value().handle;
 			glDeleteTextures(1, &texHandle);
 		}
 		m_bufferHandles.Clear();
@@ -137,10 +194,15 @@ namespace Leviathan
 	void GBuffer::Bind(Material* material)
 	{
 		int index = 0;
-		for (TMapEntry<string, uint32>* handle : m_bufferHandles)
+		for (TMapEntry<string, GBufferHandle>* handle : m_bufferHandles)
 		{
+			if (!handle->Value().render)
+			{
+				continue;
+			} 
+
 			glActiveTexture(GL_TEXTURE0 + index);
-			glBindTexture(GL_TEXTURE_2D, handle->Value());
+			glBindTexture(GL_TEXTURE_2D, handle->Value().handle);
 			material->Set(handle->Key(), index);
 			++index;
 		}

@@ -29,13 +29,18 @@ uniform Material material;
 void main()
 {
     gLocation = fs_in.worldLocation;
-    
-	vec3 normSample = texture(material.normalMap, fs_in.uv0).rgb;
-	gNormal = normalize(normSample * 2.0 - 1.0);
+
+    vec3 N = normalize(fs_in.fragNormal);
+    vec3 T = normalize(fs_in.fragTangent);
+    vec3 B = normalize(fs_in.fragBitangent);
+    mat3 TBN = mat3(T, B, N);
+
+    vec3 normSample = texture(material.normalMap, fs_in.uv0).rgb * 2.0 - 1.0;
+    gNormal = normalize(TBN * normSample);
 
     gTangent = fs_in.fragTangent;
     gBitangent = fs_in.fragBitangent;
 
-	gAlbedoSpec.rgb = texture(material.baseColor, fs_in.uv0).rgb * material.tint;
+    gAlbedoSpec.rgb = texture(material.baseColor, fs_in.uv0).rgb * material.tint;
     gAlbedoSpec.a = material.specularStrength;
 }

@@ -113,7 +113,7 @@ namespace Leviathan
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(
 			("Content/" + path).c_str(), aiProcess_Triangulate | aiProcess_GlobalScale | aiProcess_CalcTangentSpace
-		);
+		); 
 
 		TList<SubMesh*> subMeshes;
 
