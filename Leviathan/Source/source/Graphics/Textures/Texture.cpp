@@ -8,21 +8,21 @@
 namespace Leviathan
 {
 	Texture::Texture() :
-		m_fileName{ "none" }, m_width{ 0 }, m_height{ 0 }, m_channels{ 4 }, m_handle{ 0 }, m_pixels{ nullptr },
-		m_stbiLoaded{ false }
+		m_fileName{ "none" }, m_isSRgb{ false }, m_width{ 0 }, m_height{ 0 }, m_channels{ 4 },
+		m_handle{ 0 }, m_pixels{ nullptr }, m_stbiLoaded{ false }
 	{}
 
-	Texture::Texture(string fileName)
-		: m_fileName{ std::move(fileName) }, m_handle{ 0 }, m_stbiLoaded{ true }
+	Texture::Texture(string fileName, bool sRgb)
+		: m_fileName{ std::move(fileName) }, m_isSRgb{ sRgb }, m_handle{ 0 }, m_stbiLoaded{ true }
 	{
 		stbi_set_flip_vertically_on_load(true);
 		m_pixels = stbi_load(m_fileName.c_str(), &m_width, &m_height, &m_channels, STBI_default);
 		Load();
 	}
 
-	Texture::Texture(const int32 w, const int32 h, uint8* pixels)
-		: m_fileName{ "none" }, m_width{ w }, m_height{ h }, m_channels{ 4 }, m_handle{ 0 }, m_pixels{ pixels },
-		m_stbiLoaded{ false }
+	Texture::Texture(const int32 w, const int32 h, uint8* pixels, bool sRgb)
+		: m_fileName{ "none" }, m_isSRgb{ sRgb }, m_width{ w }, m_height{ h }, m_channels{ 4 },
+		m_handle{ 0 }, m_pixels{ pixels }, m_stbiLoaded{ false }
 	{
 		Load();
 	}
@@ -81,14 +81,14 @@ namespace Leviathan
 
 			case 3:
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_pixels);
+				glTexImage2D(GL_TEXTURE_2D, 0, m_isSRgb ? GL_SRGB8 : GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, m_pixels);
 				break;
 			}
 
 			case 4:
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels);
-				break; 
+				glTexImage2D(GL_TEXTURE_2D, 0, m_isSRgb ? GL_SRGB8_ALPHA8 : GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_pixels);
+				break;
 			}
 
 			default:

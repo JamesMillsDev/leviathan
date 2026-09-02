@@ -13,8 +13,8 @@ struct GBuffer
     sampler2D location;
     sampler2D normal;
     sampler2D tangent;
-    sampler2D biTangent;
-    sampler2D albedoSpec;
+    sampler2D albedo;
+    sampler2D orm;
     int debugPhase; 
 };
 
@@ -75,11 +75,11 @@ float ShadowCalculation(vec4 fragPosLightSpace, float bias)
 
 void ComputeWorldSpaceLightLocations()
 {
-    vec3 location = textureLod(gBuffer.location, fs_in.uv0, 0.0).rgb;
+    vec4 location = texture(gBuffer.location, fs_in.uv0);
 
 	for(int i = 0; i < MAX_LIGHT_COUNT; ++i)
 	{
-		worldLocationsLightSpace[i] = lightSpaceMatrices[i] * vec4(location, 1.0);
+		worldLocationsLightSpace[i] = lightSpaceMatrices[i] * location;
 	}
 }
 
@@ -88,15 +88,14 @@ void main()
     if(gBuffer.debugPhase == 1) { fragColor = vec4(texture(gBuffer.location, fs_in.uv0).rgb, 1.0); return; }
     if(gBuffer.debugPhase == 2) { fragColor = vec4(texture(gBuffer.normal, fs_in.uv0).rgb, 1.0); return; }
     if(gBuffer.debugPhase == 3) { fragColor = vec4(texture(gBuffer.tangent, fs_in.uv0).rgb, 1.0); return; }
-    if(gBuffer.debugPhase == 4) { fragColor = vec4(texture(gBuffer.biTangent, fs_in.uv0).rgb, 1.0); return; }
-    if(gBuffer.debugPhase == 5) { fragColor = vec4(texture(gBuffer.albedoSpec, fs_in.uv0).rgb, 1.0); return; }
-    if(gBuffer.debugPhase == 6) { fragColor = vec4(texture(gBuffer.albedoSpec, fs_in.uv0).a, 1.0, 1.0, 1.0); return; }
+    if(gBuffer.debugPhase == 4) { fragColor = vec4(texture(gBuffer.albedo, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 5) { fragColor = vec4(texture(gBuffer.orm, fs_in.uv0).rgb, 1.0); return; }
 
     ComputeWorldSpaceLightLocations();
 
     vec3 location = texture(gBuffer.location, fs_in.uv0).rgb;
     vec3 normal = normalize(texture(gBuffer.normal, fs_in.uv0).rgb);
-    vec4 baseColor = texture(gBuffer.albedoSpec, fs_in.uv0);
+    vec4 baseColor = texture(gBuffer.albedo, fs_in.uv0);
 
     vec3 ambient = vec3(0.1) * baseColor.rgb;
     vec3 totalDiffuseSpecular = vec3(0.0);

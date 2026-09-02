@@ -40,6 +40,7 @@ namespace Leviathan
 
         Texture* m_woodFloorBaseColor;
         Texture* m_woodFloorNormal;
+        Texture* m_woodFloorOrm;
 
         ResourceStack* m_resourceStack;
 

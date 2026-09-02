@@ -62,10 +62,10 @@ namespace Leviathan
 		m_bufferHandles.Add("gBuffer.normal", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
 		// Tangent
 		m_bufferHandles.Add("gBuffer.tangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-		// Bitangent
-		m_bufferHandles.Add("gBuffer.biTangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-		// Albedo + Specular
-		m_bufferHandles.Add("gBuffer.albedoSpec", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+		// Albedo
+		m_bufferHandles.Add("gBuffer.albedo", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+		// ORM
+		m_bufferHandles.Add("gBuffer.orm", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
 
 		// Assign the frame buffers and clear
 		glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());
@@ -96,10 +96,10 @@ namespace Leviathan
 				m_bufferHandles.Add("gBuffer.normal", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
 				// Tangent
 				m_bufferHandles.Add("gBuffer.tangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-				// Bitangent
-				m_bufferHandles.Add("gBuffer.biTangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-				// Albedo + Specular
-				m_bufferHandles.Add("gBuffer.albedoSpec", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+				// Albedo
+				m_bufferHandles.Add("gBuffer.albedo", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+				// ORM
+				m_bufferHandles.Add("gBuffer.orm", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
 
 				// Assign the frame buffers and clear
 				glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());

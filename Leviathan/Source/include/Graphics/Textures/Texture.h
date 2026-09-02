@@ -12,6 +12,7 @@ namespace Leviathan
 	{
 	private:
 		string m_fileName;
+		bool m_isSRgb;
 
 		int32 m_width;
 		int32 m_height;
@@ -24,8 +25,8 @@ namespace Leviathan
 
 	public:
 		Texture();
-		explicit Texture(string fileName);
-		explicit Texture(int32 w, int32 h, uint8* pixels = nullptr);
+		explicit Texture(string fileName, bool sRgb = false);
+		explicit Texture(int32 w, int32 h, uint8* pixels = nullptr, bool sRgb = false);
 		~Texture();
 
 	public:

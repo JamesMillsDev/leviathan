@@ -3,8 +3,8 @@
 layout(location = 0) out vec3 gLocation;
 layout(location = 1) out vec3 gNormal;
 layout(location = 2) out vec3 gTangent;
-layout(location = 3) out vec3 gBitangent;
-layout(location = 4) out vec4 gAlbedoSpec;
+layout(location = 3) out vec4 gAlbedo;
+layout(location = 4) out vec4 gOrm;
 
 in VS_OUT
 {
@@ -39,8 +39,7 @@ void main()
     gNormal = normalize(TBN * normSample);
 
     gTangent = fs_in.fragTangent;
-    gBitangent = fs_in.fragBitangent;
 
-    gAlbedoSpec.rgb = texture(material.baseColor, fs_in.uv0).rgb * material.tint;
-    gAlbedoSpec.a = material.specularStrength;
+    gAlbedo = texture(material.baseColor, fs_in.uv0) * vec4(material.tint, 1.0);
+	gOrm = texture(material.ormMap, fs_in.uv0);
 }

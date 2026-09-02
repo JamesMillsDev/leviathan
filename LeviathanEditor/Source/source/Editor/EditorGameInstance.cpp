@@ -23,6 +23,12 @@
 
 using glm::vec3;
 
+#define TRY_SWAP_DEBUG_MODE(Key, Num) \
+	if(input->IsKeyDown(EInputCodes::Key)) \
+	{ \
+		debugMode = Num;\
+	}
+
 namespace Leviathan
 {
 	EditorGameInstance::EditorGameInstance() :
@@ -30,7 +36,7 @@ namespace Leviathan
 		m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr }, m_floorMaterial{ nullptr },
 		m_orbitCamera{ nullptr }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
 		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr },
-		m_resourceStack{ new ResourceStack }, m_light{ nullptr }
+		m_woodFloorOrm{ nullptr }, m_resourceStack{ new ResourceStack }, m_light{ nullptr }
 	{
 		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
 		m_shaderBallTransform = glm::translate(m_shaderBallTransform, { 0.f, -.02f, 0.f });
@@ -55,7 +61,7 @@ namespace Leviathan
 		InitAndPush(
 			[this]
 			{
-				m_litShader = new Shader{ "Shaders/deferred_lit" }; 
+				m_litShader = new Shader{ "Shaders/deferred_lit" };
 				m_unlitShader = new Shader{ "Shaders/unlit" };
 			},
 			[this]
@@ -68,15 +74,17 @@ namespace Leviathan
 		InitAndPush(
 			[this]
 			{
-				m_rebarBaseColor = new Texture{ "Content/Textures/T_RebarConcrete_BC.tga" };
+				m_rebarBaseColor = new Texture{ "Content/Textures/T_RebarConcrete_BC.tga", true };
 				m_rebarNormal = new Texture{ "Content/Textures/T_RebarConcrete_N.tga" };
 				m_rebarOrm = new Texture{ "Content/Textures/T_RebarConcrete_ORM.tga" };
 
-				m_woodFloorBaseColor = new Texture{ "Content/Textures/T_WoodFloor_BC.png" };
+				m_woodFloorBaseColor = new Texture{ "Content/Textures/T_WoodFloor_BC.png", true };
 				m_woodFloorNormal = new Texture{ "Content/Textures/T_WoodFloor_N.png" };
+				m_woodFloorOrm = new Texture{ "Content/Textures/T_WoodFloor_ORM.png" };
 			},
 			[this]
 			{
+				delete m_woodFloorOrm;
 				delete m_woodFloorNormal;
 				delete m_woodFloorBaseColor;
 
@@ -129,6 +137,7 @@ namespace Leviathan
 
 				m_floorMaterial->SetTexture("material.baseColor", m_woodFloorBaseColor);
 				m_floorMaterial->SetTexture("material.normalMap", m_woodFloorNormal);
+				m_floorMaterial->SetTexture("material.ormMap", m_woodFloorOrm);
 			},
 			[this]
 			{
@@ -141,9 +150,7 @@ namespace Leviathan
 			[this]
 			{
 				m_light = new Light;
-				//m_light->transform = glm::translate(mat4{ 1.f }, vec3{ 1.2f, 1.f, 2.f });
-				m_light->transform = glm::lookAt(vec3{ 1.2f, 1.f, 2.f }, vec3{ 0.f, -.02f, 0.f }, vec3{ 0.f, 1.f, 0.f });
-				//m_light->transform = glm::inverse(m_light->transform);
+				m_light->transform = glm::lookAt(vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f }, vec3{ 0.f, 1.f, 0.f });
 				m_renderer->AddLight(m_light);
 			},
 			[this]
@@ -180,40 +187,12 @@ namespace Leviathan
 			m_orbitCamera->Rotate({ 2.f, 0.f });
 		}
 
-		if (input->IsKeyDown(EInputCodes::Key0))
-		{
-			debugMode = 0;
-		}
-
-		if (input->IsKeyDown(EInputCodes::Key1))
-		{
-			debugMode = 1;
-		}
-
-		if (input->IsKeyDown(EInputCodes::Key2))
-		{
-			debugMode = 2;
-		}
-
-		if (input->IsKeyDown(EInputCodes::Key3))
-		{
-			debugMode = 3;
-		}
-
-		if (input->IsKeyDown(EInputCodes::Key4))
-		{
-			debugMode = 4;
-		}
-
-		if (input->IsKeyDown(EInputCodes::Key5))
-		{
-			debugMode = 5;
-		}
-
-		if (input->IsKeyDown(EInputCodes::Key6))
-		{
-			debugMode = 6;
-		}
+		TRY_SWAP_DEBUG_MODE(KeyF6, 0)
+		TRY_SWAP_DEBUG_MODE(KeyF1, 1)
+		TRY_SWAP_DEBUG_MODE(KeyF2, 2)
+		TRY_SWAP_DEBUG_MODE(KeyF3, 3)
+		TRY_SWAP_DEBUG_MODE(KeyF4, 4)
+		TRY_SWAP_DEBUG_MODE(KeyF5, 5)
 	}
 
 	void EditorGameInstance::Render()
