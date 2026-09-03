@@ -355,13 +355,12 @@ namespace Leviathan
 			}
 		}
 
-		int32 maxSlot = 0;
+		int32 maxSlot = maxIndex;
 		for (TMapEntry<string, MaterialTextureProperty>* textureProperty : m_textures)
 		{
 			auto& [loc, texture, slot] = textureProperty->Value();
-			Set(loc, *texture, slot);
-
 			maxSlot = std::max(maxSlot, slot);
+			Set(loc, *texture, maxSlot);
 		}
 
 		if (m_isLit && useShadowMapping)

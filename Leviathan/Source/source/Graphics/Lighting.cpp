@@ -46,8 +46,7 @@ namespace Leviathan
 		} 
 
 		m_material->Set(m_material->m_cameraLocationLoc, viewLoc);
-		m_material->SetMaterialProperties(shadowMapHandle, true, 0);
-		gBuffer->Bind(m_material);
+		m_material->SetMaterialProperties(shadowMapHandle, true, gBuffer->Bind(m_material));
 		m_material->Set("gBuffer.debugPhase", debugMode);
 
 		screenQuad->Render();

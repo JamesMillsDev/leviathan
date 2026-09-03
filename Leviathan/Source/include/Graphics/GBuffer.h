@@ -71,7 +71,7 @@ namespace Leviathan
 		void Render(const mat4& projection, const mat4& view, const vec3& viewLoc);
 		void QueueRender(Material* material, Mesh* mesh, const mat4& transform);
 
-		void Bind(Material* material);
+		int32 Bind(Material* material);
 		[[nodiscard]] uint32 Handle() const;
 
 	};

@@ -191,9 +191,9 @@ namespace Leviathan
 		);
 	}
 
-	void GBuffer::Bind(Material* material)
+	int32 GBuffer::Bind(Material* material) 
 	{
-		int32 index = 1;
+		int32 index = 0;
 		for (TMapEntry<string, GBufferHandle>* handle : m_bufferHandles)
 		{
 			if (!handle->Value().render)
@@ -206,6 +206,8 @@ namespace Leviathan
 			material->Set(handle->Key(), index);
 			++index;
 		}
+
+		return index;
 	}
 
 	uint32 GBuffer::Handle() const
