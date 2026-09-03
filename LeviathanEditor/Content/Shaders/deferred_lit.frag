@@ -96,10 +96,16 @@ void main()
     vec3 location = texture(gBuffer.location, fs_in.uv0).rgb;
     vec3 normal = normalize(texture(gBuffer.normal, fs_in.uv0).rgb);
     vec4 baseColor = texture(gBuffer.albedo, fs_in.uv0);
+    vec4 orm = texture(gBuffer.orm, fs_in.uv0);
+
+    float roughness = orm.g; 
+	float maxShininess = 256.0; 
+    float shininess = pow(maxShininess, 1.0 - max(roughness, 0.001));
 
     vec3 ambient = vec3(0.1) * baseColor.rgb;
     vec3 totalDiffuseSpecular = vec3(0.0);
     vec3 viewDir = normalize(cameraLocation - location);
+
 
 	// Loop strictly up to the active light count
 	for(int i = 0; i < fs_in.lightCount; ++i)
@@ -110,14 +116,15 @@ void main()
 
 		// Calculate shadow for this specific light
 		float bias = max(0.05 * (1.0 - dot(normal, lightDir)), shadows.bias);
-		float shadow = ShadowCalculation(worldLocationsLightSpace[i], bias);
+		float shadow = 0.0;
+		//ShadowCalculation(worldLocationsLightSpace[i], bias);
 
 		float diff = max(dot(normal, lightDir), 0.0);
 		vec3 diffuse = lights[i].color * baseColor.rgb * diff;
 
-		float spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+		float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
 		spec *= step(0.0, dot(normal, lightDir));   // gate specular on the same test as diffuse
-		vec3 specular = lights[i].color * baseColor.a * spec;
+		vec3 specular = lights[i].color * spec;
 
 		// Accumulate light calculations independently
 		totalDiffuseSpecular += (1.0 - shadow) * (diffuse + specular);
