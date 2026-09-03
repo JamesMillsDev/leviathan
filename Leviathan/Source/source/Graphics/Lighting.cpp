@@ -6,8 +6,8 @@
 
 #include "Graphics/GBuffer.h"
 #include "Graphics/Light.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
+#include "Graphics/Resources/Material.h"
+#include "Graphics/Resources/Mesh.h"
 
 #include "Utility/Config.h"
 

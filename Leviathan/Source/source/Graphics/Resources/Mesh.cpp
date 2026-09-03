@@ -1,5 +1,5 @@
 // ReSharper disable CppClangTidyPerformanceNoIntToPtr
-#include "Graphics/Mesh.h"
+#include "Graphics/Resources/Mesh.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/mesh.h>

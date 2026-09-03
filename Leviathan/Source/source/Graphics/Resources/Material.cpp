@@ -1,10 +1,10 @@
 // ReSharper disable CppMemberFunctionMayBeStatic
-#include "Graphics/Material.h"
+#include "Graphics/Resources/Material.h"
 
 #include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Graphics/Textures/Texture.h"
+#include "Graphics/Resources/Textures/Texture.h"
 
 namespace Leviathan
 {

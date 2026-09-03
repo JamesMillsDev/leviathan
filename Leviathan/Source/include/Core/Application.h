@@ -13,9 +13,10 @@ using std::weak_ptr;
 
 namespace Leviathan
 {
-	class Renderer;
 	class Config;
 	class GameInstance;
+	class Renderer;
+	class ResourceManager;
 	class Window;
 
     class Application
@@ -34,6 +35,7 @@ namespace Leviathan
         shared_ptr<Window> m_window;
         shared_ptr<GameInstance> m_game;
         shared_ptr<Renderer> m_renderer;
+        shared_ptr<ResourceManager> m_resourceManager;
 
     private:
         Application();
@@ -42,6 +44,7 @@ namespace Leviathan
         [[nodiscard]] weak_ptr<Window> GetWindow() const;
         [[nodiscard]] weak_ptr<GameInstance> GetGameInstance() const;
         [[nodiscard]] weak_ptr<Renderer> GetRenderer() const;
+        [[nodiscard]] weak_ptr<ResourceManager> GetResourceManager() const;
 
     private:
         int32 Run() const;

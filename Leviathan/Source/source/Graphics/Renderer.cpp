@@ -10,11 +10,11 @@
 #include "Graphics/DepthBuffer.h"
 #include "Graphics/GBuffer.h"
 #include "Graphics/Lighting.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
 #include "Graphics/Shadows.h"
 #include "Graphics/Cameras/Camera.h"
-#include "Graphics/Textures/FrameBuffer.h"
+#include "Graphics/Resources/Material.h"
+#include "Graphics/Resources/Mesh.h"
+#include "Graphics/Resources/Textures/FrameBuffer.h"
 #include "Utility/Config.h"
 
 namespace Leviathan

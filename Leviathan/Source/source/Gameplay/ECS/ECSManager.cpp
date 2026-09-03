@@ -31,11 +31,11 @@ namespace Leviathan
 		}
 	}
 
-	void ECSManager::Render() const
+	void ECSManager::Render(const shared_ptr<Renderer>& renderer) const
 	{
 		for (TMapEntry<const char*, shared_ptr<System>>* system : m_systemManager->m_systems)
 		{
-			system->Value()->Render(m_componentManager);
+			system->Value()->Render(m_componentManager, renderer);
 		}
 	}
 }

@@ -4,10 +4,10 @@
 
 #include "Core/Window.h"
 
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
-#include "Graphics/Shader.h"
-#include "Graphics/Textures/FrameBuffer.h"
+#include "Graphics/Resources/Material.h"
+#include "Graphics/Resources/Mesh.h"
+#include "Graphics/Resources/Shader.h"
+#include "Graphics/Resources/Textures/FrameBuffer.h"
 
 namespace Leviathan
 {

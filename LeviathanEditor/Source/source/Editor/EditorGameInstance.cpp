@@ -1,28 +1,28 @@
 #include "Editor/EditorGameInstance.h"
 
 #include <glad/gl.h>
-
 #include <GLFW/glfw3.h>
-
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
+#include "Core/Application.h"
 #include "Core/Input.h"
 #include "Gameplay/ECS/Components/GraphicsComponents.h"
 #include "Gameplay/ECS/Components/TransformComponent.h"
 #include "Gameplay/ECS/Systems/RenderSystem.h"
-
 #include "Graphics/Light.h"
 #include "Graphics/Lighting.h"
-#include "Graphics/Material.h"
-#include "Graphics/Mesh.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/Shader.h"
-#include "Graphics/Textures/Texture.h"
 #include "Graphics/Cameras/OrbitCamera.h"
+#include "Graphics/Resources/Material.h"
+#include "Graphics/Resources/Mesh.h"
+#include "Graphics/Resources/ResourceManager.h"
+#include "Graphics/Resources/Shader.h"
+#include "Graphics/Resources/Textures/Texture.h"
 
 using glm::vec3;
 
@@ -35,17 +35,8 @@ using glm::vec3;
 namespace Leviathan
 {
 	EditorGameInstance::EditorGameInstance() :
-		m_litShader{ nullptr }, m_unlitShader{ nullptr }, m_shaderBallMesh{ nullptr },
-		m_shaderBallMaterial{ nullptr }, m_floorMesh{ nullptr }, m_floorMaterial{ nullptr },
-		m_orbitCamera{ nullptr }, m_rebarBaseColor{ nullptr }, m_rebarNormal{ nullptr },
-		m_rebarOrm{ nullptr }, m_woodFloorBaseColor{ nullptr }, m_woodFloorNormal{ nullptr },
-		m_woodFloorOrm{ nullptr }, m_resourceStack{ new ResourceStack }, m_light{ nullptr }
-	{
-		m_shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
-		m_shaderBallTransform = glm::translate(m_shaderBallTransform, { 0.f, -.02f, 0.f });
-
-		m_floorTransform = glm::scale(mat4{ 1.f }, vec3{ 4.f });
-	}
+		m_orbitCamera{ nullptr }, m_resourceStack{ new ResourceStack }, m_light{ nullptr }
+	{}
 
 	void EditorGameInstance::Init()
 	{
@@ -55,12 +46,13 @@ namespace Leviathan
 				m_ecsManager->RegisterComponent<RenderComponent>();
 				m_ecsManager->RegisterComponent<TransformComponent>();
 
-				m_ecsManager->RegisterSystem<RenderSystem>()->renderer = m_renderer;
+				m_ecsManager->RegisterSystem<RenderSystem>();
 			},
 			[this]
 			{}
 		);
 
+		// Camera
 		InitAndPush(
 			[this]
 			{
@@ -72,118 +64,7 @@ namespace Leviathan
 				delete m_orbitCamera;
 			}
 		);
-		// Shaders
-		InitAndPush(
-			[this]
-			{
-				m_litShader = new Shader{ "Shaders/deferred_lit" };
-				m_unlitShader = new Shader{ "Shaders/unlit" };
-			},
-			[this]
-			{
-				delete m_unlitShader;
-				delete m_litShader;
-			}
-		);
-		// Textures
-		InitAndPush(
-			[this]
-			{
-				m_rebarBaseColor = new Texture{ "Content/Textures/T_RebarConcrete_BC.tga", true };
-				m_rebarNormal = new Texture{ "Content/Textures/T_RebarConcrete_N.tga" };
-				m_rebarOrm = new Texture{ "Content/Textures/T_RebarConcrete_ORM.tga" };
 
-				m_woodFloorBaseColor = new Texture{ "Content/Textures/T_WoodFloor_BC.png", true };
-				m_woodFloorNormal = new Texture{ "Content/Textures/T_WoodFloor_N.png" };
-				m_woodFloorOrm = new Texture{ "Content/Textures/T_WoodFloor_ORM.png" };
-			},
-			[this]
-			{
-				delete m_woodFloorOrm;
-				delete m_woodFloorNormal;
-				delete m_woodFloorBaseColor;
-
-				delete m_rebarOrm;
-				delete m_rebarNormal;
-				delete m_rebarBaseColor;
-			}
-		);
-		// Shader ball
-		InitAndPush(
-			[this]
-			{
-				m_shaderBallMesh = Mesh::MakeFromAssimp("Meshes/shaderBall.fbx");
-
-				m_shaderBallMaterial = new Material{ m_litShader };
-
-				m_shaderBallMaterial->SetMaterialProperty(
-					"material.tint", EMaterialPropertyType::Vec3, {
-						.v3Value = vec3{1.f}
-					}
-				);
-
-				m_shaderBallMaterial->SetMaterialProperty(
-					"material.specularStrength",
-					EMaterialPropertyType::Float, { .fValue = 0.f }
-				);
-
-				m_shaderBallMaterial->SetTexture("material.baseColor", m_rebarBaseColor);
-				m_shaderBallMaterial->SetTexture("material.normalMap", m_rebarNormal);
-				m_shaderBallMaterial->SetTexture("material.ormMap", m_rebarOrm);
-
-				Entity entity = m_ecsManager->MakeEntity();
-				m_ecsManager->AddComponent(entity, RenderComponent{
-											   .mesh = m_shaderBallMesh,
-											   .material = m_shaderBallMaterial
-					});
-				m_ecsManager->AddComponent(entity, TransformComponent{
-											   .transform = m_shaderBallTransform
-					});
-			},
-			[this]
-			{
-				delete m_shaderBallMaterial;
-				delete m_shaderBallMesh;
-			}
-		);
-		// Floor
-		InitAndPush(
-			[this]
-			{
-				m_floorMesh = Mesh::MakePlane();
-
-				m_floorMaterial = new Material{ m_litShader };
-
-				m_floorMaterial->SetMaterialProperty(
-					"material.tint", EMaterialPropertyType::Vec3, {
-						.v3Value = vec3{1.f}
-					}
-				);
-
-				m_floorMaterial->SetMaterialProperty(
-					"material.specularStrength", EMaterialPropertyType::Float,
-					{ .fValue = .25f }
-				);
-
-				m_floorMaterial->SetTexture("material.baseColor", m_woodFloorBaseColor);
-				m_floorMaterial->SetTexture("material.normalMap", m_woodFloorNormal);
-				m_floorMaterial->SetTexture("material.ormMap", m_woodFloorOrm);
-
-				Entity entity = m_ecsManager->MakeEntity();
-				m_ecsManager->AddComponent(entity, RenderComponent{
-											   .mesh = m_floorMesh,
-											   .material = m_floorMaterial
-					});
-				m_ecsManager->AddComponent(entity, TransformComponent{
-											   .transform = m_floorTransform
-					});
-			},
-			[this]
-			{
-				delete m_floorMaterial;
-				delete m_floorMesh;
-			}
-		);
 		// Light
 		InitAndPush(
 			[this]
@@ -199,6 +80,86 @@ namespace Leviathan
 				delete m_light;
 			}
 		);
+
+		weak_ptr<ResourceManager> resourceManagerPtr = Application::Instance()->GetResourceManager();
+
+		if (auto resourceManager = resourceManagerPtr.lock())
+		{
+			resourceManager->Register("litShader", new Shader{ "Shaders/deferred_lit" });
+
+			resourceManager->Register("rebarBaseColor", new Texture{ "Content/Textures/T_RebarConcrete_BC.tga", true });
+			resourceManager->Register("rebarNormal", new Texture{ "Content/Textures/T_RebarConcrete_N.tga" });
+			resourceManager->Register("rebarOrm", new Texture{ "Content/Textures/T_RebarConcrete_ORM.tga" });
+
+			resourceManager->Register("floorBaseColor", new Texture{ "Content/Textures/T_WoodFloor_BC.png", true });
+			resourceManager->Register("floorNormal", new Texture{ "Content/Textures/T_WoodFloor_N.png" });
+			resourceManager->Register("floorOrm", new Texture{ "Content/Textures/T_WoodFloor_ORM.png" });
+
+			resourceManager->Register("shaderBallMesh", Mesh::MakeFromAssimp("Meshes/shaderBall.fbx"));
+			resourceManager->Register("floorMesh", Mesh::MakePlane());
+
+			Material* shaderBallMaterial = new Material{ resourceManager->Find<Shader>("litShader") };
+			Material* floorMaterial = new Material{ resourceManager->Find<Shader>("litShader") };
+			resourceManager->Register("shaderBallMaterial", shaderBallMaterial);
+			resourceManager->Register("floorMaterial", floorMaterial);
+
+			mat4 shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
+			shaderBallTransform = glm::translate(shaderBallTransform, { 0.f, -.02f, 0.f });
+
+			mat4 floorTransform = glm::scale(mat4{ 1.f }, vec3{ 4.f });
+
+			shaderBallMaterial->SetMaterialProperty(
+				"material.tint", EMaterialPropertyType::Vec3, {
+					.v3Value = vec3{1.f}
+				}
+			);
+
+			shaderBallMaterial->SetMaterialProperty(
+				"material.specularStrength",
+				EMaterialPropertyType::Float, { .fValue = 0.f }
+			);
+
+			shaderBallMaterial->SetTexture("material.baseColor", resourceManager->Find<Texture>("rebarBaseColor"));
+			shaderBallMaterial->SetTexture("material.normalMap", resourceManager->Find<Texture>("rebarNormal"));
+			shaderBallMaterial->SetTexture("material.ormMap", resourceManager->Find<Texture>("rebarOrm"));
+
+			floorMaterial->SetMaterialProperty(
+				"material.tint", EMaterialPropertyType::Vec3, {
+					.v3Value = vec3{1.f}
+				}
+			);
+
+			floorMaterial->SetMaterialProperty(
+				"material.specularStrength", EMaterialPropertyType::Float,
+				{ .fValue = .25f }
+			);
+
+			floorMaterial->SetTexture("material.baseColor", resourceManager->Find<Texture>("floorBaseColor"));
+			floorMaterial->SetTexture("material.normalMap", resourceManager->Find<Texture>("floorNormal"));
+			floorMaterial->SetTexture("material.ormMap", resourceManager->Find<Texture>("floorOrm"));
+
+			Entity entity = m_ecsManager->MakeEntity();
+			m_ecsManager->BuildEntity(entity,
+				RenderComponent{
+				   .mesh = resourceManager->Find<Mesh>("shaderBallMesh"),
+				   .material = shaderBallMaterial
+				},
+				TransformComponent{
+					.transform = shaderBallTransform
+				}
+			);
+
+			entity = m_ecsManager->MakeEntity();
+			m_ecsManager->BuildEntity(entity, 
+				RenderComponent{
+				   .mesh = resourceManager->Find<Mesh>("floorMesh"),
+				   .material = floorMaterial
+				},
+				TransformComponent{
+					.transform = floorTransform
+				}
+			);
+		}
 	}
 
 	void EditorGameInstance::Tick()

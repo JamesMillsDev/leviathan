@@ -11,6 +11,7 @@ using std::set;
 namespace Leviathan
 {
 	class ComponentManager;
+	class Renderer;
 
 	class System
 	{
@@ -25,7 +26,7 @@ namespace Leviathan
 	public:
 		virtual Signature GetSystemSignature(const shared_ptr<ComponentManager>& componentManager) = 0;
 		virtual void Tick(const shared_ptr<ComponentManager>& componentManager) {}
-		virtual void Render(const shared_ptr<ComponentManager>& componentManager) {}
+		virtual void Render(const shared_ptr<ComponentManager>& componentManager, const shared_ptr<Renderer>& renderer) {}
 
 	};
 }

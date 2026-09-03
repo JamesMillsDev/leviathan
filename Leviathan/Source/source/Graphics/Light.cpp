@@ -2,7 +2,7 @@
 
 #include <format>
 
-#include "Graphics/Material.h"
+#include "Graphics/Resources/Material.h"
 
 namespace Leviathan
 {

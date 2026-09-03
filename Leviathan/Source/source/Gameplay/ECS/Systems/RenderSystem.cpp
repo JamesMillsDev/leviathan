@@ -17,7 +17,7 @@ namespace Leviathan
 		return signature;
 	}
 
-	void RenderSystem::Render(const shared_ptr<ComponentManager>& componentManager)
+	void RenderSystem::Render(const shared_ptr<ComponentManager>& componentManager, const shared_ptr<Renderer>& renderer)
 	{
 		for (const Entity& entity : m_entities)
 		{

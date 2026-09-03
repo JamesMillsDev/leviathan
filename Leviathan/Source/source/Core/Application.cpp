@@ -5,6 +5,7 @@
 #include "Core/Window.h"
 #include "Gameplay/GameInstance.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/Resources/ResourceManager.h"
 #include "Utility/Config.h"
 
 namespace Leviathan
@@ -19,7 +20,8 @@ namespace Leviathan
 	Application::Application()
 		: m_engineConfig{ std::make_shared<Config>("Engine") },
 		m_window{ std::make_shared<Window>(m_engineConfig, Window::PrivateKey{}) },
-		m_renderer{ std::make_shared<Renderer>(Renderer::PrivateKey{}) }
+		m_renderer{ std::make_shared<Renderer>(Renderer::PrivateKey{}) },
+		m_resourceManager{ std::make_shared<ResourceManager>(ResourceManager::PrivateKey{}) }
 	{
 
 	}
@@ -37,6 +39,11 @@ namespace Leviathan
 	weak_ptr<Renderer> Application::GetRenderer() const
 	{
 		return m_renderer;
+	}
+
+	weak_ptr<ResourceManager> Application::GetResourceManager() const
+	{
+		return m_resourceManager;
 	}
 
 	int32 Application::Run() const
@@ -66,7 +73,7 @@ namespace Leviathan
 				m_game->m_ecsManager->Tick(); // TODO: Remove this
 
 				m_game->Render();
-				m_game->m_ecsManager->Render(); // TODO: Remove this
+				m_game->m_ecsManager->Render(m_renderer); // TODO: Remove this
 
 				// Present the current window and clear the input status
 				m_renderer->Render();
@@ -78,6 +85,7 @@ namespace Leviathan
 
 			// Close the window safely
 			Input::Destroy();
+			m_resourceManager->Clean();
 			m_renderer->Shutdown();
 			m_window->Close();
 
