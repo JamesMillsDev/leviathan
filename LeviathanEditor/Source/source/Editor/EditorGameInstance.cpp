@@ -103,14 +103,9 @@ namespace Leviathan
 			resourceManager->Register("shaderBallMaterial", shaderBallMaterial);
 			resourceManager->Register("floorMaterial", floorMaterial);
 
-			mat4 shaderBallTransform = glm::scale(mat4{ 1.f }, vec3{ .5f });
-			shaderBallTransform = glm::translate(shaderBallTransform, { 0.f, -.02f, 0.f });
-
-			mat4 floorTransform = glm::scale(mat4{ 1.f }, vec3{ 4.f });
-
 			shaderBallMaterial->SetMaterialProperty(
 				"material.tint", EMaterialPropertyType::Vec3, {
-					.v3Value = vec3{1.f}
+					.v3Value = vec3{ 1.f }
 				}
 			);
 
@@ -145,18 +140,20 @@ namespace Leviathan
 				   .material = shaderBallMaterial
 				},
 				TransformComponent{
-					.transform = shaderBallTransform
+					.transform = glm::translate(
+						glm::scale(mat4{ 1.f }, vec3{ .5f }), { 0.f, -.02f, 0.f }
+					)
 				}
 			);
 
 			entity = m_ecsManager->MakeEntity();
-			m_ecsManager->BuildEntity(entity, 
+			m_ecsManager->BuildEntity(entity,
 				RenderComponent{
 				   .mesh = resourceManager->Find<Mesh>("floorMesh"),
 				   .material = floorMaterial
 				},
 				TransformComponent{
-					.transform = floorTransform
+					.transform = glm::scale(mat4{ 1.f }, vec3{ 4.f })
 				}
 			);
 		}
@@ -189,17 +186,15 @@ namespace Leviathan
 		}
 
 		TRY_SWAP_DEBUG_MODE(KeyF6, 0)
-			TRY_SWAP_DEBUG_MODE(KeyF1, 1)
-			TRY_SWAP_DEBUG_MODE(KeyF2, 2)
-			TRY_SWAP_DEBUG_MODE(KeyF3, 3)
-			TRY_SWAP_DEBUG_MODE(KeyF4, 4)
-			TRY_SWAP_DEBUG_MODE(KeyF5, 5)
+		TRY_SWAP_DEBUG_MODE(KeyF1, 1)
+		TRY_SWAP_DEBUG_MODE(KeyF2, 2)
+		TRY_SWAP_DEBUG_MODE(KeyF3, 3)
+		TRY_SWAP_DEBUG_MODE(KeyF4, 4)
+		TRY_SWAP_DEBUG_MODE(KeyF5, 5)
 	}
 
 	void EditorGameInstance::Render()
 	{
-		/*m_renderer->Render(m_floorMaterial, m_floorMesh, m_floorTransform);
-		m_renderer->Render(m_shaderBallMaterial, m_shaderBallMesh, m_shaderBallTransform);*/
 	}
 
 	void EditorGameInstance::Shutdown()
