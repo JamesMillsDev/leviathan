@@ -11,6 +11,9 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "Core/Input.h"
+#include "Gameplay/ECS/Components/GraphicsComponents.h"
+#include "Gameplay/ECS/Components/TransformComponent.h"
+#include "Gameplay/ECS/Systems/RenderSystem.h"
 
 #include "Graphics/Light.h"
 #include "Graphics/Lighting.h"
@@ -46,6 +49,18 @@ namespace Leviathan
 
 	void EditorGameInstance::Init()
 	{
+		InitAndPush(
+			[this]
+			{
+				m_ecsManager->RegisterComponent<RenderComponent>();
+				m_ecsManager->RegisterComponent<TransformComponent>();
+
+				m_ecsManager->RegisterSystem<RenderSystem>()->renderer = m_renderer;
+			},
+			[this]
+			{}
+		);
+
 		InitAndPush(
 			[this]
 			{
@@ -102,16 +117,28 @@ namespace Leviathan
 				m_shaderBallMaterial = new Material{ m_litShader };
 
 				m_shaderBallMaterial->SetMaterialProperty(
-					"material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } }
+					"material.tint", EMaterialPropertyType::Vec3, {
+						.v3Value = vec3{1.f}
+					}
 				);
 
 				m_shaderBallMaterial->SetMaterialProperty(
-					"material.specularStrength", EMaterialPropertyType::Float, { .fValue = 0.f }
+					"material.specularStrength",
+					EMaterialPropertyType::Float, { .fValue = 0.f }
 				);
 
 				m_shaderBallMaterial->SetTexture("material.baseColor", m_rebarBaseColor);
 				m_shaderBallMaterial->SetTexture("material.normalMap", m_rebarNormal);
 				m_shaderBallMaterial->SetTexture("material.ormMap", m_rebarOrm);
+
+				Entity entity = m_ecsManager->MakeEntity();
+				m_ecsManager->AddComponent(entity, RenderComponent{
+											   .mesh = m_shaderBallMesh,
+											   .material = m_shaderBallMaterial
+					});
+				m_ecsManager->AddComponent(entity, TransformComponent{
+											   .transform = m_shaderBallTransform
+					});
 			},
 			[this]
 			{
@@ -128,16 +155,28 @@ namespace Leviathan
 				m_floorMaterial = new Material{ m_litShader };
 
 				m_floorMaterial->SetMaterialProperty(
-					"material.tint", EMaterialPropertyType::Vec3, { .v3Value = vec3{ 1.f } }
+					"material.tint", EMaterialPropertyType::Vec3, {
+						.v3Value = vec3{1.f}
+					}
 				);
 
 				m_floorMaterial->SetMaterialProperty(
-					"material.specularStrength", EMaterialPropertyType::Float, { .fValue = .25f }
+					"material.specularStrength", EMaterialPropertyType::Float,
+					{ .fValue = .25f }
 				);
 
 				m_floorMaterial->SetTexture("material.baseColor", m_woodFloorBaseColor);
 				m_floorMaterial->SetTexture("material.normalMap", m_woodFloorNormal);
 				m_floorMaterial->SetTexture("material.ormMap", m_woodFloorOrm);
+
+				Entity entity = m_ecsManager->MakeEntity();
+				m_ecsManager->AddComponent(entity, RenderComponent{
+											   .mesh = m_floorMesh,
+											   .material = m_floorMaterial
+					});
+				m_ecsManager->AddComponent(entity, TransformComponent{
+											   .transform = m_floorTransform
+					});
 			},
 			[this]
 			{
@@ -150,7 +189,8 @@ namespace Leviathan
 			[this]
 			{
 				m_light = new Light;
-				m_light->transform = glm::lookAt(vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f }, vec3{ 0.f, 1.f, 0.f });
+				m_light->transform = glm::lookAt(vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f },
+					vec3{ 0.f, 1.f, 0.f });
 				m_renderer->AddLight(m_light);
 			},
 			[this]
@@ -188,17 +228,17 @@ namespace Leviathan
 		}
 
 		TRY_SWAP_DEBUG_MODE(KeyF6, 0)
-		TRY_SWAP_DEBUG_MODE(KeyF1, 1)
-		TRY_SWAP_DEBUG_MODE(KeyF2, 2)
-		TRY_SWAP_DEBUG_MODE(KeyF3, 3)
-		TRY_SWAP_DEBUG_MODE(KeyF4, 4)
-		TRY_SWAP_DEBUG_MODE(KeyF5, 5)
+			TRY_SWAP_DEBUG_MODE(KeyF1, 1)
+			TRY_SWAP_DEBUG_MODE(KeyF2, 2)
+			TRY_SWAP_DEBUG_MODE(KeyF3, 3)
+			TRY_SWAP_DEBUG_MODE(KeyF4, 4)
+			TRY_SWAP_DEBUG_MODE(KeyF5, 5)
 	}
 
 	void EditorGameInstance::Render()
 	{
-		m_renderer->Render(m_floorMaterial, m_floorMesh, m_floorTransform);
-		m_renderer->Render(m_shaderBallMaterial, m_shaderBallMesh, m_shaderBallTransform);
+		/*m_renderer->Render(m_floorMaterial, m_floorMesh, m_floorTransform);
+		m_renderer->Render(m_shaderBallMaterial, m_shaderBallMesh, m_shaderBallTransform);*/
 	}
 
 	void EditorGameInstance::Shutdown()

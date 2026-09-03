@@ -1,11 +1,13 @@
 #pragma once
 
 #include <cassert>
+#include <unordered_map>
 
 #include "Gameplay/ECS/Types.h"
 #include "Maths/Alias.h"
 #include "Utility/Collections/TArray.h"
-#include "Utility/Collections/TMap.h"
+
+using std::unordered_map;
 
 namespace Leviathan
 {
@@ -37,10 +39,10 @@ namespace Leviathan
 		TArray<T, MAX_ENTITIES> m_componentArray;
 
 		/** Map from an entity ID to an array index. */
-		TMap<Entity, uint64> m_entityToIndexMap;
+		unordered_map<Entity, uint64> m_entityToIndexMap;
 
 		/** Map from an array index to an entity ID. */
-		TMap<uint64, Entity> m_indexToEntityMap;
+		unordered_map<uint64, Entity> m_indexToEntityMap;
 
 		/** Total size of valid entries in the array. */
 		uint64 m_size;
@@ -53,7 +55,7 @@ namespace Leviathan
 	public:
 		void InsertData(const Entity entity, T component)
 		{
-			assert(!m_entityToIndexMap.ContainsKey(entity) && "Component added to same entity more than once.");
+			assert(!m_entityToIndexMap.contains(entity) && "Component added to same entity more than once.");
 
 			// Put new entry at end and update the maps
 			size_t newIndex = m_size;
@@ -65,7 +67,7 @@ namespace Leviathan
 
 		void RemoveData(const Entity entity)
 		{
-			assert(m_entityToIndexMap.ContainsKey(entity) && "Removing non-existent component.");
+			assert(m_entityToIndexMap.contains(entity) && "Removing non-existent component.");
 
 			// Copy element at end into deleted element's place to maintain density
 			size_t indexOfRemovedEntity = m_entityToIndexMap[entity];
@@ -77,15 +79,15 @@ namespace Leviathan
 			m_entityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
 			m_indexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
 
-			m_entityToIndexMap.RemoveFirst(entity);
-			m_indexToEntityMap.RemoveFirst(indexOfLastElement);
+			m_entityToIndexMap.erase(entity);
+			m_indexToEntityMap.erase(indexOfLastElement);
 
 			--m_size;
 		}
 
 		T& GetData(const Entity entity)
 		{
-			assert(m_entityToIndexMap.ContainsKey(entity) && "Retrieving non-existent component.");
+			assert(m_entityToIndexMap.contains(entity) && "Retrieving non-existent component.");
 
 			// Return a reference to the entity's component
 			return m_componentArray[m_entityToIndexMap[entity]];
@@ -93,7 +95,7 @@ namespace Leviathan
 
 		void OnEntityDestroyed(const Entity entity) override
 		{
-			if (m_entityToIndexMap.ContainsKey(entity))
+			if (m_entityToIndexMap.contains(entity))
 			{
 				// Remove the entity's component if it existed
 				RemoveData(entity);

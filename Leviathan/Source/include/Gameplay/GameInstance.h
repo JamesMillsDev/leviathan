@@ -20,8 +20,8 @@ namespace Leviathan
 
 	public:
 		GameInstance()
+			: m_ecsManager{ new ECSManager }
 		{
-			m_ecsManager->Init();
 		}
 
 		virtual ~GameInstance() = default;

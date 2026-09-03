@@ -63,7 +63,10 @@ namespace Leviathan
 				}
 
 				m_game->Tick();
+				m_game->m_ecsManager->Tick(); // TODO: Remove this
+
 				m_game->Render();
+				m_game->m_ecsManager->Render(); // TODO: Remove this
 
 				// Present the current window and clear the input status
 				m_renderer->Render();

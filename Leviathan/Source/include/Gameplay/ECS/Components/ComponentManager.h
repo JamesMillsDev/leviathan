@@ -15,6 +15,10 @@ namespace Leviathan
 		friend class ECSManager;
 
 	private:
+		struct PrivateKey
+		{};
+
+	private:
 		/** Map from type string pointer to a component type. */
 		TMap<const char*, ComponentType> m_componentTypes;
 
@@ -24,7 +28,7 @@ namespace Leviathan
 		/** The component type to be assigned to the next registered component - starting at 0. */
 		ComponentType m_nextComponentType;
 
-	private:
+	public:
 		ComponentManager();
 
 	public:
@@ -51,7 +55,7 @@ namespace Leviathan
 		{
 			const char* typeName = typeid(T).name();
 
-			assert(!m_componentTypes.ContainsKey(typeName) && "Component not registered before use.");
+			assert(m_componentTypes.ContainsKey(typeName) && "Component not registered before use.");
 
 			// Return this component's type - used for creating signatures
 			return m_componentTypes[typeName];

@@ -16,7 +16,7 @@ namespace Leviathan
 	{
 		friend class SystemManager;
 
-	private:
+	protected:
 		set<Entity> m_entities;
 
 	public:
@@ -24,7 +24,8 @@ namespace Leviathan
 
 	public:
 		virtual Signature GetSystemSignature(const shared_ptr<ComponentManager>& componentManager) = 0;
-		virtual void Tick(float dt, const shared_ptr<ComponentManager>& componentManager) = 0;
+		virtual void Tick(const shared_ptr<ComponentManager>& componentManager) {}
+		virtual void Render(const shared_ptr<ComponentManager>& componentManager) {}
 
 	};
 }

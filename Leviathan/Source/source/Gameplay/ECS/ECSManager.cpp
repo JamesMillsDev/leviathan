@@ -4,6 +4,13 @@
 
 namespace Leviathan
 {
+	ECSManager::ECSManager() 
+	{
+		m_componentManager = shared_ptr<ComponentManager>{ new ComponentManager };
+		m_entityManager = shared_ptr<EntityManager>{ new EntityManager };
+		m_systemManager = shared_ptr<SystemManager>{ new SystemManager };
+	}
+
 	Entity ECSManager::MakeEntity() const
 	{
 		return m_entityManager->MakeEntity();
@@ -16,18 +23,19 @@ namespace Leviathan
 		m_componentManager->OnEntityDestroyed(entity);
 	}
 
-	void ECSManager::Init()
-	{
-		m_componentManager = shared_ptr<ComponentManager>{ new ComponentManager };
-		m_entityManager = shared_ptr<EntityManager>{ new EntityManager };
-		m_systemManager = shared_ptr<SystemManager>{ new SystemManager };
-	}
-
-	void ECSManager::Tick(const float dt) const
+	void ECSManager::Tick() const
 	{
 		for (TMapEntry<const char*, shared_ptr<System>>* system : m_systemManager->m_systems)
 		{
-			system->Value()->Tick(dt, m_componentManager);
+			system->Value()->Tick(m_componentManager);
+		}
+	}
+
+	void ECSManager::Render() const
+	{
+		for (TMapEntry<const char*, shared_ptr<System>>* system : m_systemManager->m_systems)
+		{
+			system->Value()->Render(m_componentManager);
 		}
 	}
 }

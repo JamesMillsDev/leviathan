@@ -15,11 +15,15 @@ namespace Leviathan
 	class ECSManager
 	{
 		friend class GameInstance;
+		friend class Application; // TODO: Remove this
 
 	private:
 		shared_ptr<ComponentManager> m_componentManager;
 		shared_ptr<EntityManager> m_entityManager;
 		shared_ptr<SystemManager> m_systemManager;
+
+	private:
+		ECSManager();
 
 	public:
 		Entity MakeEntity() const;
@@ -68,10 +72,12 @@ namespace Leviathan
 		}
 
 		template<typename T>
-		void RegisterSystem() const
+		shared_ptr<T> RegisterSystem() const
 		{
 			const shared_ptr<System> system = m_systemManager->RegisterSystem<T>();
 			SetSystemSignature<T>(system->GetSystemSignature(m_componentManager));
+
+			return std::static_pointer_cast<T>(system);
 		}
 
 		template<typename T>
@@ -81,8 +87,8 @@ namespace Leviathan
 		}
 
 	private:
-		void Init();
-		void Tick(float dt) const;
+		void Tick() const;
+		void Render() const;
 
 	};
 }
