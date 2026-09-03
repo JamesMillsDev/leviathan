@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "ECS/ECSManager.h"
+
 using std::shared_ptr;
 
 namespace Leviathan
@@ -14,8 +16,14 @@ namespace Leviathan
 
 	protected:
 		shared_ptr<Renderer> m_renderer;
+		shared_ptr<ECSManager> m_ecsManager;
 
 	public:
+		GameInstance()
+		{
+			m_ecsManager->Init();
+		}
+
 		virtual ~GameInstance() = default;
 
 	public:
