@@ -4,7 +4,8 @@ layout(location = 0) out vec3 gLocation;
 layout(location = 1) out vec3 gNormal;
 layout(location = 2) out vec3 gTangent;
 layout(location = 3) out vec4 gAlbedo;
-layout(location = 4) out vec4 gOrm;
+layout(location = 4) out vec4 gTint;
+layout(location = 5) out vec4 gOrm;
 
 in VS_OUT
 {
@@ -40,6 +41,7 @@ void main()
 
     gTangent = fs_in.fragTangent;
 
-    gAlbedo = texture(material.baseColor, fs_in.uv0) * vec4(material.tint, 1.0);
+    gAlbedo = texture(material.baseColor, fs_in.uv0);
+    gTint = vec4(material.tint, 1.0);
 	gOrm = texture(material.ormMap, fs_in.uv0);
 }

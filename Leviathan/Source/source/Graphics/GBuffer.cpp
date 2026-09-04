@@ -51,25 +51,7 @@ namespace Leviathan
 		glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
 
 		const int32 w = window->Width(), h = window->Height();
-
-		// Build out the gBuffer elements
-		TList<uint32> attachments;
-		// Depth
-		m_bufferHandles.Add("gBuffer.depth", GenerateDepthAttachment(w, h));
-		// Position
-		m_bufferHandles.Add("gBuffer.location", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-		// Normal
-		m_bufferHandles.Add("gBuffer.normal", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-		// Tangent
-		m_bufferHandles.Add("gBuffer.tangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-		// Albedo
-		m_bufferHandles.Add("gBuffer.albedo", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
-		// ORM
-		m_bufferHandles.Add("gBuffer.orm", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
-
-		// Assign the frame buffers and clear
-		glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		BuildBuffers(w, h);
 
 		window->onWindowResized.Add([this](int32 w, int32 h)
 			{
@@ -82,28 +64,7 @@ namespace Leviathan
 
 				glDeleteFramebuffers(1, &m_handle);
 
-				// Generate the handle
-				glGenFramebuffers(1, &m_handle);
-				glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
-
-				// Build out the gBuffer elements
-				TList<uint32> attachments;
-				// Depth
-				m_bufferHandles.Add("gBuffer.depth", GenerateDepthAttachment(w, h));
-				// Position
-				m_bufferHandles.Add("gBuffer.location", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-				// Normal
-				m_bufferHandles.Add("gBuffer.normal", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-				// Tangent
-				m_bufferHandles.Add("gBuffer.tangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
-				// Albedo
-				m_bufferHandles.Add("gBuffer.albedo", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
-				// ORM
-				m_bufferHandles.Add("gBuffer.orm", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
-
-				// Assign the frame buffers and clear
-				glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				BuildBuffers(w, h);
 			});
 	}
 
@@ -186,6 +147,8 @@ namespace Leviathan
 					m_material->SetMaterialProperties(0, false, 0);
 
 					render.mesh->Render();
+
+					m_material->UnBind();
 				}
 			}
 		);
@@ -213,5 +176,33 @@ namespace Leviathan
 	uint32 GBuffer::Handle() const
 	{
 		return m_handle;
+	}
+
+	void GBuffer::BuildBuffers(int32 w, int32 h)
+	{
+		// Generate the handle
+		glGenFramebuffers(1, &m_handle);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
+
+		// Build out the gBuffer elements
+		TList<uint32> attachments;
+		// Depth
+		m_bufferHandles.Add("gBuffer.depth", GenerateDepthAttachment(w, h));
+		// Position
+		m_bufferHandles.Add("gBuffer.location", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+		// Normal
+		m_bufferHandles.Add("gBuffer.normal", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+		// Tangent
+		m_bufferHandles.Add("gBuffer.tangent", GenerateTextureBuffer(w, h, GL_RGBA16F, GL_FLOAT, attachments));
+		// Albedo
+		m_bufferHandles.Add("gBuffer.albedo", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+		// Tint
+		m_bufferHandles.Add("gBuffer.tint", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+		// ORM
+		m_bufferHandles.Add("gBuffer.orm", GenerateTextureBuffer(w, h, GL_RGBA, GL_UNSIGNED_BYTE, attachments));
+
+		// Assign the frame buffers and clear
+		glDrawBuffers(static_cast<int32>(attachments.Count()), attachments.Data());
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 }

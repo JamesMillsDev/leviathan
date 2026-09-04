@@ -58,6 +58,8 @@ namespace Leviathan
 				m_material->Set(m_material->m_modelLoc, transform);
 
 				mesh->Render();
+
+				m_material->UnBind();
 			});
 	}
 
@@ -71,7 +73,7 @@ namespace Leviathan
 		while (!m_renders.empty())
 		{
 			// TODO: work out multiple shadow maps
-			m_renders.front()(projection, glm::inverse(lights[0]->transform)); 
+			m_renders.front()(projection, lights[0]->transform);
 			m_renders.pop();
 		}
 

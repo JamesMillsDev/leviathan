@@ -74,5 +74,7 @@ namespace Leviathan
 		int32 Bind(Material* material);
 		[[nodiscard]] uint32 Handle() const;
 
+		void BuildBuffers(int32 w, int32 h);
+
 	};
 }

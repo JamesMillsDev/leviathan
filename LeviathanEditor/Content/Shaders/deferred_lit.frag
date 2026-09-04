@@ -14,6 +14,7 @@ struct GBuffer
     sampler2D normal;
     sampler2D tangent;
     sampler2D albedo;
+    sampler2D tint;
     sampler2D orm;
     int debugPhase; 
 };
@@ -95,7 +96,7 @@ void main()
 
     vec3 location = texture(gBuffer.location, fs_in.uv0).rgb;
     vec3 normal = normalize(texture(gBuffer.normal, fs_in.uv0).rgb);
-    vec4 baseColor = texture(gBuffer.albedo, fs_in.uv0);
+    vec4 baseColor = texture(gBuffer.albedo, fs_in.uv0) * texture(gBuffer.tint, fs_in.uv0);
     vec4 orm = texture(gBuffer.orm, fs_in.uv0);
 
     float roughness = orm.g; 

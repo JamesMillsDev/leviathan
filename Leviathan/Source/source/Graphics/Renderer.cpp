@@ -78,7 +78,7 @@ namespace Leviathan
 		m_shadows->Render(m_lighting->m_lights);
 		m_gBuffer->Render(projection, view, cameraLoc);
 		m_window->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		m_lighting->Render(m_screenMesh, m_gBuffer, cameraLoc, m_shadows->m_shadowMap->Handle());
+		m_lighting->Render(m_screenMesh, m_gBuffer, cameraLoc, m_shadows->m_shadowMap->TextureHandle());
 	}
 
 	void Renderer::Shutdown() const

@@ -70,8 +70,10 @@ namespace Leviathan
 			[this]
 			{
 				m_light = new Light;
-				m_light->transform = glm::lookAt(vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f },
-					vec3{ 0.f, 1.f, 0.f });
+				m_light->transform = glm::lookAt(
+					vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f },
+					vec3{ 0.f, 1.f, 0.f }
+				);
 				m_renderer->AddLight(m_light);
 			},
 			[this]
@@ -86,6 +88,7 @@ namespace Leviathan
 		if (auto resourceManager = resourceManagerPtr.lock())
 		{
 			resourceManager->Register("litShader", new Shader{ "Shaders/deferred_lit" });
+			resourceManager->Register("unlitShader", new Shader{ "Shaders/deferred_unlit" });
 
 			resourceManager->Register("rebarBaseColor", new Texture{ "Content/Textures/T_RebarConcrete_BC.tga", true });
 			resourceManager->Register("rebarNormal", new Texture{ "Content/Textures/T_RebarConcrete_N.tga" });
@@ -97,11 +100,14 @@ namespace Leviathan
 
 			resourceManager->Register("shaderBallMesh", Mesh::MakeFromAssimp("Meshes/shaderBall.fbx"));
 			resourceManager->Register("floorMesh", Mesh::MakePlane());
+			resourceManager->Register("cubeMesh", Mesh::MakeCube());
 
 			Material* shaderBallMaterial = new Material{ resourceManager->Find<Shader>("litShader") };
 			Material* floorMaterial = new Material{ resourceManager->Find<Shader>("litShader") };
+			Material* debugLightMaterial = new Material{ resourceManager->Find<Shader>("unlitShader") };
 			resourceManager->Register("shaderBallMaterial", shaderBallMaterial);
 			resourceManager->Register("floorMaterial", floorMaterial);
+			resourceManager->Register("debugLightMaterial", debugLightMaterial);
 
 			shaderBallMaterial->SetMaterialProperty(
 				"material.tint", EMaterialPropertyType::Vec3, {
@@ -133,7 +139,24 @@ namespace Leviathan
 			floorMaterial->SetTexture("material.normalMap", resourceManager->Find<Texture>("floorNormal"));
 			floorMaterial->SetTexture("material.ormMap", resourceManager->Find<Texture>("floorOrm"));
 
+			debugLightMaterial->SetMaterialProperty(
+				"material.tint", EMaterialPropertyType::Vec3, {
+					.v3Value = vec3{1.f}
+				}
+			);
+
 			Entity entity = m_ecsManager->MakeEntity();
+			m_ecsManager->BuildEntity(entity,
+				RenderComponent{
+				   .mesh = resourceManager->Find<Mesh>("floorMesh"),
+				   .material = floorMaterial
+				},
+				TransformComponent{
+					.transform = glm::scale(mat4{ 1.f }, vec3{ 4.f })
+				}
+			);
+
+			entity = m_ecsManager->MakeEntity();
 			m_ecsManager->BuildEntity(entity,
 				RenderComponent{
 				   .mesh = resourceManager->Find<Mesh>("shaderBallMesh"),
@@ -149,11 +172,14 @@ namespace Leviathan
 			entity = m_ecsManager->MakeEntity();
 			m_ecsManager->BuildEntity(entity,
 				RenderComponent{
-				   .mesh = resourceManager->Find<Mesh>("floorMesh"),
-				   .material = floorMaterial
+				   .mesh = resourceManager->Find<Mesh>("cubeMesh"),
+				   .material = debugLightMaterial
 				},
 				TransformComponent{
-					.transform = glm::scale(mat4{ 1.f }, vec3{ 4.f })
+					.transform = glm::scale(glm::lookAt(
+						vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f },
+						vec3{ 0.f, 1.f, 0.f }
+					), vec3{ .25f })
 				}
 			);
 		}
