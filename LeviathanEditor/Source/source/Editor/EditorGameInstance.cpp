@@ -90,6 +90,10 @@ namespace Leviathan
 			resourceManager->Register("litShader", new Shader{ "Shaders/deferred_lit" });
 			resourceManager->Register("unlitShader", new Shader{ "Shaders/deferred_unlit" });
 
+			resourceManager->Register("defaultBaseColor", new Texture{ 1, 1, new uint8[4]{ 255, 255, 255, 255 }, true });
+			resourceManager->Register("defaultNormal", new Texture{ 1, 1, new uint8[4]{ 128, 128, 255, 255 } });
+			resourceManager->Register("defaultOrm", new Texture{ 1, 1, new uint8[4]{ 255, 0, 0, 255 } });
+
 			resourceManager->Register("rebarBaseColor", new Texture{ "Content/Textures/T_RebarConcrete_BC.tga", true });
 			resourceManager->Register("rebarNormal", new Texture{ "Content/Textures/T_RebarConcrete_N.tga" });
 			resourceManager->Register("rebarOrm", new Texture{ "Content/Textures/T_RebarConcrete_ORM.tga" });
@@ -144,6 +148,10 @@ namespace Leviathan
 					.v3Value = vec3{1.f}
 				}
 			);
+
+			debugLightMaterial->SetTexture("material.baseColor", resourceManager->Find<Texture>("defaultBaseColor"));
+			debugLightMaterial->SetTexture("material.normalMap", resourceManager->Find<Texture>("defaultNormal"));
+			debugLightMaterial->SetTexture("material.ormMap", resourceManager->Find<Texture>("defaultOrm"));
 
 			Entity entity = m_ecsManager->MakeEntity();
 			m_ecsManager->BuildEntity(entity,
@@ -217,6 +225,7 @@ namespace Leviathan
 		TRY_SWAP_DEBUG_MODE(KeyF3, 3)
 		TRY_SWAP_DEBUG_MODE(KeyF4, 4)
 		TRY_SWAP_DEBUG_MODE(KeyF5, 5)
+		TRY_SWAP_DEBUG_MODE(KeyF6, 6)
 	}
 
 	void EditorGameInstance::Render()

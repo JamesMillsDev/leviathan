@@ -392,6 +392,13 @@ namespace Leviathan
 		return m_shader->Bind();
 	}
 
+	void Material::ClearMaterialProperties()
+	{
+		m_properties.Clear();
+		m_textures.Clear();
+		m_lastTextureSlot = 0;
+	}
+
 	int32 Material::FindUniform(const string& name) const
 	{
 		return glGetUniformLocation(m_shader->m_handle, name.c_str());

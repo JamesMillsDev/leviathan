@@ -136,6 +136,7 @@ namespace Leviathan
 						return;
 					}
 
+					m_material->ClearMaterialProperties();
 					m_material->CopyMaterialProperties(render.material);
 
 					m_material->Set(m_material->m_vpLoc, projection * view);
@@ -147,8 +148,6 @@ namespace Leviathan
 					m_material->SetMaterialProperties(0, false, 0);
 
 					render.mesh->Render();
-
-					m_material->UnBind();
 				}
 			}
 		);

@@ -132,6 +132,7 @@ namespace Leviathan
 		void SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping, int32 maxIndex);
 		void CopyMaterialProperties(Material* material);
 		bool Bind() const;
+		void ClearMaterialProperties();
 
 		int32 FindUniform(const string& name) const;
 

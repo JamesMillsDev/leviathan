@@ -58,8 +58,6 @@ namespace Leviathan
 				m_material->Set(m_material->m_modelLoc, transform);
 
 				mesh->Render();
-
-				m_material->UnBind();
 			});
 	}
 

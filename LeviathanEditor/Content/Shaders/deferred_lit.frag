@@ -90,7 +90,8 @@ void main()
     if(gBuffer.debugPhase == 2) { fragColor = vec4(texture(gBuffer.normal, fs_in.uv0).rgb, 1.0); return; }
     if(gBuffer.debugPhase == 3) { fragColor = vec4(texture(gBuffer.tangent, fs_in.uv0).rgb, 1.0); return; }
     if(gBuffer.debugPhase == 4) { fragColor = vec4(texture(gBuffer.albedo, fs_in.uv0).rgb, 1.0); return; }
-    if(gBuffer.debugPhase == 5) { fragColor = vec4(texture(gBuffer.orm, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 5) { fragColor = vec4(texture(gBuffer.tint, fs_in.uv0).rgb, 1.0); return; }
+    if(gBuffer.debugPhase == 6) { fragColor = vec4(texture(gBuffer.orm, fs_in.uv0).rgb, 1.0); return; }
 
     ComputeWorldSpaceLightLocations();
 
