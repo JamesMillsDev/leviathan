@@ -70,10 +70,7 @@ namespace Leviathan
 			[this]
 			{
 				m_light = new Light;
-				m_light->transform = glm::lookAt(
-					vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f },
-					vec3{ 0.f, 1.f, 0.f }
-				);
+				m_light->transform = glm::translate(mat4{ 1.f }, vec3{ 0.f, 1.f, 2.f });
 				m_renderer->AddLight(m_light);
 			},
 			[this]
@@ -184,10 +181,7 @@ namespace Leviathan
 				   .material = debugLightMaterial
 				},
 				TransformComponent{
-					.transform = glm::scale(glm::lookAt(
-						vec3{ -1.2f, -1.f, -2.f }, vec3{ 0.f, -.02f, 0.f },
-						vec3{ 0.f, 1.f, 0.f }
-					), vec3{ .25f })
+					.transform = glm::scale(m_light->transform, vec3{ .25f })
 				}
 			);
 		}
@@ -219,7 +213,7 @@ namespace Leviathan
 			m_orbitCamera->Rotate({ 2.f, 0.f });
 		}
 
-		TRY_SWAP_DEBUG_MODE(KeyF6, 0)
+		TRY_SWAP_DEBUG_MODE(KeyF7, 0)
 		TRY_SWAP_DEBUG_MODE(KeyF1, 1)
 		TRY_SWAP_DEBUG_MODE(KeyF2, 2)
 		TRY_SWAP_DEBUG_MODE(KeyF3, 3)

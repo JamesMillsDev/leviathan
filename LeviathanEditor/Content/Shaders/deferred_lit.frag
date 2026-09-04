@@ -113,7 +113,7 @@ void main()
 	for(int i = 0; i < fs_in.lightCount; ++i)
 	{
 		// Since they are directional lights, light location acts as the target position vector
-		vec3 lightDir = normalize(-lights[i].direction);
+		vec3 lightDir = normalize(lights[i].direction);
 		vec3 halfwayDir = normalize(lightDir + viewDir);
 
 		// Calculate shadow for this specific light
