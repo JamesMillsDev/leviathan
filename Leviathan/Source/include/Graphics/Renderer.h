@@ -16,6 +16,8 @@ using glm::vec3;
 
 namespace Leviathan
 {
+	class Shader;
+	class FrameBuffer;
 	class Shadows;
 	class Camera;
 	class Config;
@@ -46,6 +48,10 @@ namespace Leviathan
 		GBuffer* m_gBuffer;
 		Shadows* m_shadows;
 
+		FrameBuffer* m_finalRender;
+		Shader* m_finalRenderShader;
+		Material* m_finalRenderMaterial;
+
 		Material* m_unlitRenderMaterial;
 
 	private:
@@ -67,7 +73,7 @@ namespace Leviathan
 		void Render() const;
 		void Shutdown() const;
 
-		void CopyBuffer(uint32 buffer, uint32 filter) const;
+		void CopyBuffer(uint32 buffer, uint32 filter, uint32 target) const;
 
 	};
 }
