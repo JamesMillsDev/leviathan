@@ -6,6 +6,8 @@
 
 #include <glm/mat4x4.hpp>
 
+#include "Maths/Alias.h"
+
 using std::queue;
 using std::shared_ptr;
 
@@ -44,6 +46,8 @@ namespace Leviathan
 		GBuffer* m_gBuffer;
 		Shadows* m_shadows;
 
+		Material* m_unlitRenderMaterial;
+
 	private:
 		struct PrivateKey
 		{};
@@ -62,6 +66,8 @@ namespace Leviathan
 		void Init(const shared_ptr<Window>& window);
 		void Render() const;
 		void Shutdown() const;
+
+		void CopyBuffer(uint32 buffer, uint32 filter) const;
 
 	};
 }

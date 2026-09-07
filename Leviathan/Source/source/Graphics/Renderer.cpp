@@ -77,8 +77,17 @@ namespace Leviathan
 		m_depthBuffer->Render(projection, view);
 		m_shadows->Render(m_lighting->m_lights);
 		m_gBuffer->Render(projection, view, cameraLoc);
+
 		m_window->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		CopyBuffer(GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
 		m_lighting->Render(m_screenMesh, m_gBuffer, cameraLoc, m_shadows->m_shadowMap->TextureHandle());
+
+		// Colour pass
+		m_window->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_gBuffer->Render(projection, view, cameraLoc);
+		CopyBuffer(GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		CopyBuffer(GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	}
 
 	void Renderer::Shutdown() const
@@ -88,5 +97,17 @@ namespace Leviathan
 		delete m_depthBuffer;
 		delete m_lighting;
 		delete m_gBuffer;
+	}
+
+	void Renderer::CopyBuffer(const uint32 buffer, const uint32 filter) const
+	{
+		// Copy content of geometry's depth buffer to default framebuffer's depth buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gBuffer->Handle());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+		glBlitFramebuffer(
+			0, 0, m_window->m_width, m_window->m_height, 0, 0, m_window->m_width,
+			m_window->m_height, buffer, filter
+		);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 }
