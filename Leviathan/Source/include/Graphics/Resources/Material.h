@@ -65,6 +65,7 @@ namespace Leviathan
 	{
 		friend class DepthBuffer;
 		friend class GBuffer;
+		friend class IRenderPass;
 		friend class Lighting;
 		friend class Renderer;
 		friend class Shadows;
@@ -128,11 +129,12 @@ namespace Leviathan
 		void Set(int32 id, mat3* value, int32 count);
 		void Set(int32 id, mat4* value, int32 count);
 		
-	private:
-		void SetMaterialProperties(uint32 shadowMapHandle, bool useShadowMapping, int32 maxIndex);
+		void SetMaterialProperties(uint32 shadowMapHandle = 0, bool useShadowMapping = false, int32 maxIndex = 0);
 		void CopyMaterialProperties(Material* material);
-		bool Bind() const;
 		void ClearMaterialProperties();
+
+	private:
+		bool Bind() const;
 
 		int32 FindUniform(const string& name) const;
 

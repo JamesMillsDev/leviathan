@@ -74,7 +74,7 @@ namespace Leviathan
 		Mesh();
 		~Mesh();
 
-	private:
+	public:
 		void Render();
 
 	};
